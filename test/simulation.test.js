@@ -10,6 +10,9 @@ import {simulate, normalizeConfig} from '../engine/simulator.js';
 import {saveRun, readRun, listRuns, validateResult} from '../storage/files.js';
 import {buildIndex, observationAt} from '../shared/results.js';
 import {createAppServer} from '../server.js';
+import {memberView, SCENARIO_SUBJECT} from '../shared/crew.js';
+
+const CDR = {Cookie: 'simisa_member=ana-torres'};
 
 test('misma configuración reproduce exactamente el contenido, aun después de otras ejecuciones', () => {
   const first = simulate({seed: 42});
@@ -23,6 +26,13 @@ test('se conservan las definiciones de entrega y los intervalos de medición', (
   const index = buildIndex(run), catalog = Object.fromEntries(run.indicators.map(m => [m.clave, m]));
   assert.equal(catalog.bmd.unidad, 'g/cm²'); assert.equal(catalog.stress.unidad, '/10');
   assert.equal(catalog.gluc.unidad, 'mg/dL');
+  assert.equal(catalog.rad.unidad, 'µSv/h');
+  assert.equal(catalog.rad.sourceId, 'radiacion');
+  assert.equal(catalog.rad.periodSec, 60);
+  assert.equal(catalog.rad.referenceKind, 'none');
+  assert.equal(index.rad.length, 1441);
+  assert.ok(index.rad.every(r => r.condition === 'unknown' && r.quality === 'valid'));
+  assert.ok(!run.events.some(e => e.indicator === 'rad' && e.type === 'indicator'));
   assert.equal(index.bmd.length, 1); assert.equal(index.sleep.length, 2);
   // El estrés percibido no se simula: solo proviene del chequeo psicológico.
   assert.equal(index.stress.length, 0);
@@ -40,7 +50,7 @@ test('se conservan las definiciones de entrega y los intervalos de medición', (
 });
 
 test('episodio correlacionado, huecos y recuperación preservan historia y última condición', () => {
-  const run = simulate(), index = buildIndex(run);
+  const run = memberView(simulate(), SCENARIO_SUBJECT), index = buildIndex(run);
   const at = (id, sec) => observationAt(run, index, id, sec);
   assert.ok(at('spo2', 1440).current.value < at('spo2', 0).current.value - 5);
   assert.ok(at('rr', 1440).current.value > at('rr', 0).current.value + 3);
@@ -58,7 +68,7 @@ test('episodio correlacionado, huecos y recuperación preservan historia y últi
 });
 
 test('señal inválida no se convierte en condición médica ni contamina consultas', () => {
-  const run = simulate({scenario: 'calidad'}), index = buildIndex(run);
+  const run = memberView(simulate({scenario: 'calidad'}), SCENARIO_SUBJECT), index = buildIndex(run);
   const reading = observationAt(run, index, 'spo2', 1500);
   assert.equal(reading.latest.value, 105); assert.equal(reading.latest.quality, 'invalid');
   assert.equal(reading.current, null); assert.equal(reading.condition, 'inside');
@@ -71,7 +81,7 @@ test('configuración inválida y versiones incompatibles se rechazan', () => {
     assert.throws(() => normalizeConfig(config));
   }
   const run = simulate({durationMinutes: 1});
-  assert.throws(() => validateResult({...run, schemaVersion: 2}));
+  assert.throws(() => validateResult({...run, schemaVersion: 3}));
   assert.throws(() => validateResult({...run, engineVersion: 'future'}));
   assert.throws(() => validateResult({...run, catalogVersion: 'future'}));
 });
@@ -83,9 +93,21 @@ test('la telemetría rechaza estrés simulado; resultados 1.0.0 se leen sin pres
   const stressRow = {...payload.measurements.find(r => r.indicator === 'hr'), id: 'stress:0', indicator: 'stress', value: 3.4, unit: '/10', sourceId: 'bienestar', condition: 'inside'};
   const withStress = {...payload, measurements: [stressRow, ...payload.measurements]};
   assert.throws(() => validateResult(rehash(withStress)), /autoinforme/);
-  const legacy = rehash({...withStress, engineVersion: 'synthetic-1.0.0', catalogVersion: 'entrega-1.0.0'});
+  const {crew, ...single} = withStress, mine = r => r.subjectId === 'ana-torres';
+  const legacy = rehash({...single, schemaVersion: 1, engineVersion: 'synthetic-1.0.0', catalogVersion: 'entrega-1.0.0',
+    subject: {id: 'ana-torres', name: 'Ana Torres', fictional: true}, measurements: single.measurements.filter(mine), events: single.events.filter(e => mine(e))});
   assert.equal(validateResult(legacy), legacy);
   assert.equal(buildIndex(legacy).stress.length, 0);
+  // El catálogo ampliado no impide abrir ejecuciones de tripulación sin dosímetro.
+  for (const engineVersion of ['synthetic-2.0.0', 'synthetic-2.1.0']) {
+    const previous = rehash({...payload, engineVersion, catalogVersion: 'entrega-1.1.0',
+      indicators: payload.indicators.filter(m => m.clave !== 'rad'),
+      sources: payload.sources.filter(s => s.id !== 'radiacion'),
+      measurements: payload.measurements.filter(r => r.indicator !== 'rad'),
+      events: payload.events.filter(e => e.indicator !== 'rad')});
+    assert.equal(validateResult(previous), previous);
+    assert.equal(buildIndex(previous).rad, undefined);
+  }
 });
 
 test('el estrés percibido se consulta desde los chequeos psicológicos', () => {
@@ -130,21 +152,21 @@ test('API guarda, reinicia el servicio y vuelve a leer exactamente el archivo', 
   let server = createAppServer({dataDir: dir}), url = await listen(server);
   let original;
   try {
-    const response = await fetch(url + '/api/runs', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({durationMinutes: 2})});
+    const response = await fetch(url + '/api/runs', {method: 'POST', headers: {'Content-Type': 'application/json', ...CDR}, body: JSON.stringify({durationMinutes: 2})});
     assert.equal(response.status, 201);
     const {id} = await response.json();
-    original = await (await fetch(url + '/api/runs/' + id)).json();
+    original = await (await fetch(url + '/api/runs/' + id, {headers: CDR})).json();
     assert.deepEqual(original, JSON.parse(await readFile(path.join(dir, id + '.json'), 'utf8')));
     assert.equal((await fetch(url + '/server.js')).status, 404);
-    assert.equal((await fetch(url + '/api/runs', {method: 'POST', headers: {'Content-Type': 'application/json', Origin: 'https://example.org'}, body: '{}'})).status, 403);
+    assert.equal((await fetch(url + '/api/runs', {method: 'POST', headers: {'Content-Type': 'application/json', Origin: 'https://example.org', ...CDR}, body: '{}'})).status, 403);
     assert.equal((await fetch(url + '/shared/catalog.js')).status, 200);
     assert.equal((await fetch(url + '/assets/corazon-oblicuo.png')).headers.get('content-type'), 'image/png');
   } finally { await close(server); }
   server = createAppServer({dataDir: dir}); url = await listen(server);
   try {
-    const listing = await (await fetch(url + '/api/runs')).json();
+    const listing = await (await fetch(url + '/api/runs', {headers: CDR})).json();
     assert.equal(listing.runs[0].id, original.result.id);
-    assert.deepEqual(await (await fetch(url + '/api/runs/' + original.result.id)).json(), original);
+    assert.deepEqual(await (await fetch(url + '/api/runs/' + original.result.id, {headers: CDR})).json(), original);
   } finally { await close(server); }
 });
 
@@ -172,14 +194,38 @@ test('simulador independiente produce un archivo que la web recupera tras reinic
   for (let i = 0; i < 2; i++) {
     const {child, url} = await launch();
     try {
-      const listing = await (await fetch(url + '/api/runs')).json();
+      const listing = await (await fetch(url + '/api/runs', {headers: CDR})).json();
       assert.equal(listing.runs[0].id, disk.result.id);
-      const recovered = await (await fetch(url + '/api/runs/' + disk.result.id)).json();
+      const recovered = await (await fetch(url + '/api/runs/' + disk.result.id, {headers: CDR})).json();
       assert.deepEqual(recovered, disk);
       const index = buildIndex(recovered.result);
       assert.equal(observationAt(recovered.result, index, 'hr', 0).current.value, disk.result.measurements.find(r => r.indicator === 'hr').value);
+      assert.equal(observationAt(recovered.result, index, 'rad', 0).current.value, disk.result.measurements.find(r => r.indicator === 'rad').value);
     } finally {
       const exited = new Promise(resolve => child.once('exit', resolve)); child.kill(); await exited;
     }
   }
+});
+
+test('historial previo: lecturas espaciadas antes del inicio, chequeos sintéticos y validación', async () => {
+  const run = simulate({durationMinutes: 10, historyDays: 14});
+  validateResult(run);
+  const kenji = memberView(run, SCENARIO_SUBJECT), index = buildIndex(kenji);
+  const past = index.hr.filter(r => r.elapsedSec < 0);
+  assert.equal(past[0].elapsedSec, -14 * 86400);
+  assert.equal(past[1].elapsedSec - past[0].elapsedSec, 1800);
+  assert.equal(index.rad[0].elapsedSec, -14 * 86400);
+  assert.equal(index.rad[1].elapsedSec - index.rad[0].elapsedSec, 1800);
+  assert.equal(index.sleep.filter(r => r.elapsedSec < 0).length, 14);
+  // Una lectura del historial no queda "desactualizada" por su espaciado de 30 minutos.
+  assert.ok(observationAt(kenji, index, 'hr', -86400 + 900).current);
+  // Chequeos sintéticos diarios, marcados y por tripulante; el estrés de Kenji aumenta hacia el inicio.
+  assert.equal(kenji.checkins.length, 14);
+  assert.ok(index.stress.every(r => r.synthetic && r.captureMethod === 'self_report'));
+  assert.ok(index.stress.at(-1).value > index.stress[0].value);
+  assert.ok(run.measurements.every(r => r.indicator !== 'stress'));
+  assert.throws(() => normalizeConfig({historyDays: 31}));
+  const {id, ...payload} = run;
+  const forged = {...payload, checkins: [{...payload.checkins[0], synthetic: false}]};
+  assert.throws(() => validateResult(rehash(forged)), /sintético/);
 });

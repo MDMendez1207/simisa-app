@@ -2,42 +2,54 @@ import {mkdir, open, readFile, readdir, link, unlink} from 'node:fs/promises';
 import path from 'node:path';
 import {createHash, randomUUID} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
-import {normalizeConfig, ENGINE_VERSION, LEGACY_ENGINE_VERSIONS} from '../engine/simulator.js';
+import {normalizeConfig, COMPATIBLE_ENGINE_VERSIONS, SCHEMA_VERSION, LEGACY_ENGINE_VERSIONS, MOODS} from '../engine/simulator.js';
 import {CATALOG_VERSION, LEGACY_CATALOG_VERSIONS, isSensorMetric} from '../shared/catalog.js';
+import {ROLES} from '../shared/crew.js';
 
 export const DEFAULT_DATA_DIR = new URL('../data/runs/', import.meta.url);
 const checksum = result => createHash('sha256').update(JSON.stringify(result)).digest('hex');
 const validId = id => typeof id === 'string' && /^[a-f0-9]{24}$/.test(id);
-const current = r => r.engineVersion === ENGINE_VERSION && r.catalogVersion === CATALOG_VERSION;
-const legacy = r => LEGACY_ENGINE_VERSIONS.includes(r.engineVersion) && LEGACY_CATALOG_VERSIONS.includes(r.catalogVersion);
+const current = r => r.schemaVersion === SCHEMA_VERSION && COMPATIBLE_ENGINE_VERSIONS.includes(r.engineVersion) && [CATALOG_VERSION, ...LEGACY_CATALOG_VERSIONS].includes(r.catalogVersion);
+// Versión 1: un único sujeto (motores 1.0.0 y 1.1.0). Se leen sin migrar.
+const legacy = r => r.schemaVersion === 1 && LEGACY_ENGINE_VERSIONS.includes(r.engineVersion) && [CATALOG_VERSION, ...LEGACY_CATALOG_VERSIONS].includes(r.catalogVersion);
+const allowsSyntheticStress = r => r.engineVersion === 'synthetic-1.0.0';
 
 export function validateResult(result) {
-  if (!result || result.schemaVersion !== 1 || !validId(result.id) ||
-      !(current(result) || legacy(result))) throw new Error('Formato o versión de resultado no compatible.');
-  normalizeConfig(result.config);
+  if (!result || !validId(result.id) || !(current(result) || legacy(result))) throw new Error('Formato o versión de resultado no compatible.');
+  const config = normalizeConfig(result.config), historySec = config.historyDays * 86400;
   if (!Array.isArray(result.indicators) || !result.indicators.length || !Array.isArray(result.sources) ||
-      !Array.isArray(result.measurements) || !result.measurements.length || !Array.isArray(result.events) ||
-      result.subject?.fictional !== true || typeof result.subject.id !== 'string') throw new Error('Resultado incompleto.');
+      !Array.isArray(result.measurements) || !result.measurements.length || !Array.isArray(result.events)) throw new Error('Resultado incompleto.');
+  const crew = current(result) ? result.crew : [result.subject];
+  if (!Array.isArray(crew) || !crew.length || crew.some(m => m?.fictional !== true || typeof m.id !== 'string' || typeof m.name !== 'string') ||
+      (current(result) && (result.subject !== undefined || crew.some(m => !ROLES[m.role]))) ||
+      new Set(crew.map(m => m.id)).size !== crew.length) throw new Error('Resultado incompleto.');
+  const members = new Set(crew.map(m => m.id));
   const metrics = new Map(result.indicators.map(m => [m.clave, m]));
   const sources = new Set(result.sources.map(s => s.id));
   const ids = new Set();
-  let lastTime = -1;
+  let lastTime = -Infinity;
   for (const row of result.measurements) {
     const metric = metrics.get(row.indicator);
-    if (!metric || row.subjectId !== result.subject.id || row.unit !== metric.unidad || !sources.has(row.sourceId) ||
+    if (!metric || !members.has(row.subjectId) || row.unit !== metric.unidad || !sources.has(row.sourceId) ||
         row.isDemo !== true || row.captureMethod !== 'synthetic' ||
         !['valid', 'low_quality', 'invalid', 'missing'].includes(row.quality) ||
         !['available', 'disconnected'].includes(row.availability) ||
         !['inside', 'outside', 'unknown'].includes(row.condition) ||
-        !Number.isInteger(row.elapsedSec) || row.elapsedSec < lastTime || row.elapsedSec > result.config.durationMinutes * 60 ||
+        !Number.isInteger(row.elapsedSec) || row.elapsedSec < Math.max(lastTime, -historySec) || row.elapsedSec > result.config.durationMinutes * 60 ||
         row.timestamp !== new Date(Date.parse(result.config.startTime) + row.elapsedSec * 1000).toISOString() ||
         ids.has(row.id) || (row.quality === 'missing' ? row.value !== null : !Number.isFinite(row.value))) throw new Error('Medición inválida o inconsistente.');
     if (row.quality === 'valid' && (row.value < metric.domain[0] || row.value > metric.domain[1])) throw new Error('Valor válido fuera del dominio.');
     // Desde 1.1.0 la telemetría solo contiene indicadores de sensores.
-    if (current(result) && !isSensorMetric(row.indicator)) throw new Error('Un indicador de autoinforme no puede provenir de la telemetría.');
+    if (!allowsSyntheticStress(result) && !isSensorMetric(row.indicator)) throw new Error('Un indicador de autoinforme no puede provenir de la telemetría.');
     ids.add(row.id); lastTime = row.elapsedSec;
   }
-  for (const event of result.events) if (!ids.has(event.evidenceId) || !metrics.has(event.indicator)) throw new Error('Evento sin evidencia.');
+  if (result.checkins !== undefined && (!Array.isArray(result.checkins) || result.checkins.some(c => !c || c.synthetic !== true || !members.has(c.subjectId) ||
+      !Number.isInteger(c.elapsedSec) || c.elapsedSec < -historySec || c.elapsedSec >= 0 || !MOODS.includes(c.mood) ||
+      !Number.isFinite(c.stress) || c.stress < 0 || c.stress > 10 || typeof c.id !== 'string' ||
+      c.observedAt !== new Date(Date.parse(result.config.startTime) + c.elapsedSec * 1000).toISOString()))) throw new Error('Chequeo sintético inválido.');
+  const owner = new Map(result.measurements.map(r => [r.id, r.subjectId]));
+  for (const event of result.events) if (!ids.has(event.evidenceId) || !metrics.has(event.indicator) ||
+    (current(result) && event.subjectId !== owner.get(event.evidenceId))) throw new Error('Evento sin evidencia.');
   const {id, ...payload} = result;
   if (checksum(payload).slice(0, 24) !== id) throw new Error('La identidad no coincide con el contenido.');
   return result;

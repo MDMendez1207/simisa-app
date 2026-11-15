@@ -1,0 +1,13 @@
+{
+  "id": "64d3f7f3-958c-4923-8d67-8021e71221a9",
+  "createdAt": "2026-11-15T01:23:58.635Z",
+  "elapsedSec": 940,
+  "observedAt": "2026-11-14T12:15:40.000Z",
+  "subjectId": "ana-torres",
+  "authorId": "ana-torres",
+  "type": "chat",
+  "payload": {
+    "question": "Resumen de mis indicadores",
+    "answer": "Frecuencia cardíaca: 75.3 lpm (adquisición 12:15:40 UTC). Dentro de referencia.\nSaturación O₂: 97.0 % (adquisición 12:15:40 UTC). Dentro de referencia.\nFrecuencia respiratoria: 16.3 rpm (adquisición 12:15:40 UTC). Dentro de referencia.\nTemperatura corporal: 36.6 °C (adquisición 12:15:00 UTC). Dentro de referencia.\nHoras de sueño: 6.9 h (adquisición 12:00:00 UTC). Dentro de referencia.\nEstrés percibido: 2.8 /10 (chequeo psicológico 08:00:00 UTC). Dentro de referencia."
+  }
+}

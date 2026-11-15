@@ -1,0 +1,133 @@
+/* Espaciado y jerarquía compartidos por las pantallas de consulta. */
+:root { --space: 16px; --panel-padding: 16px; }
+/* Un mismo fondo hasta el borde del viewport, también con zoom o escalado. */
+html, body { margin: 0 !important; padding: 0 !important; border: 0 !important; outline: 0 !important; width: 100%; background: var(--bg, #060d1b); }
+body { min-height: 100vh; min-height: 100dvh; }
+#app { position: fixed; inset: 0; width: auto; height: auto; margin: 0; padding: 0; min-width: 0; background: var(--bg, #060d1b); border: 0; outline: 0; box-shadow: none; isolation: isolate; }
+.glow { display: none; }
+.login-screen { background: var(--bg); }
+.login-wrap { border-color: var(--line2); }
+.content { padding: 20px 24px 28px; }
+.content > section { max-width: 1480px; }
+.sec-head { margin-bottom: 18px; gap: 12px; align-items: center; }
+.sec-head h1 { font-size: 25px; line-height: 1.25; }
+.sec-head p { font-size: 13px; line-height: 1.5; }
+.card { padding: var(--panel-padding); }
+.card h2 { font-size: 16px; margin-bottom: 8px; }
+.card h3 { font-size: 14px; }
+.section-gap { margin-top: var(--space); }
+.stack, .grid, .quality-grid, .two-columns, .explorer-layout { gap: var(--space); min-width: 0; }
+.stack > *, .quality-grid > *, .two-columns > *, .explorer-layout > * { min-width: 0; }
+.stack { align-content: start; }
+.two-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.dashboard-split { grid-template-columns: minmax(0, 1.3fr) minmax(280px, 1fr); }
+.sleep-layout { grid-template-columns: minmax(180px, 230px) minmax(0, 1fr); }
+.wellbeing-layout { grid-template-columns: minmax(0, 1.3fr) minmax(280px, 1fr); }
+.kpi-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: 12px; }
+.overview-metrics { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.reading { padding: 14px; }
+.reading .kv { margin: 8px 0; font-size: 28px; line-height: 1.15; }
+.reading .reading-foot { gap: 6px; }
+.reading-foot small { margin: 0; font-family: var(--sans); font-variant-numeric: tabular-nums; }
+.timestamp { display: inline-block; white-space: nowrap; color: var(--muted); font-size: 12px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.time-cell { width: 1%; white-space: nowrap; }
+.time-cell .timestamp { font-size: 11.5px; }
+.topbar { min-height: 66px; padding: 10px 24px; gap: 12px; }
+.tb-right { gap: 12px; min-width: 0; }
+.mission-clock { gap: 8px; padding: 4px 12px 4px 4px; flex-shrink: 0; }
+.mission-clock small { font-size: 10px; text-transform: none; letter-spacing: 0; }
+.mission-clock .header-time { font-size: 16px; line-height: 1.2; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.clock-play { width: 34px; height: 34px; flex-shrink: 0; }
+#subjectPicker label { font-size: 11px; gap: 6px; }
+#subjectPicker select { max-width: 240px; min-height: 34px; font-size: 12px; margin: 0; }
+.chart-head { align-items: center; margin-bottom: 8px; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 18px; padding-top: 10px; margin: 10px 0 0; border-top: 1px solid var(--line2); }
+.history-chart { max-height: 300px; }
+.explorer-layout .history-chart { max-height: 235px; }
+.anatomy-card { padding: 0; }
+.anatomy-stage { height: clamp(360px, 54vh, 520px); }
+.anatomy-toolbar { padding: 11px 14px; gap: 8px; }
+.anatomy-footer { padding: 9px 14px; }
+.region-list { gap: 8px; margin-bottom: 14px; }
+.explorer-layout > .stack { gap: 12px; }
+.explorer-layout .eyebrow { margin-bottom: 4px; }
+.event-item { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 12px 0; }
+.event-item > .row { justify-content: flex-end; }
+.event-item p { font-size: 13px; margin: 5px 0 3px; }
+.empty { padding: 14px 0; font-size: 13px; }
+#crewGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.crew-card { gap: 10px; }
+.crew-head { padding-right: 0; }
+.crew-status { position: static; align-self: flex-start; }
+.crew-values.section-gap { margin-top: 0; }
+.crew-values { padding: 10px; gap: 10px; }
+.crew-notes { min-height: 0; }
+.crew-actions { margin-top: 0; }
+.sensor-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.sensor-kpi { gap: 3px; padding: 14px; }
+.sensor-kpi b { font-size: 28px; }
+.meter-cell { min-width: 100px; }
+.device-name small { max-width: 280px; }
+.issue-list li { grid-template-columns: minmax(150px, 210px) minmax(0, 1fr); padding: 9px 12px; gap: 10px; }
+.table-scroll { margin-top: 12px; }
+th, td { padding: 9px 10px; }
+.report-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.report-toolbar h2 { margin-bottom: 4px; }
+.report-toolbar .btn { flex-shrink: 0; }
+.report-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: var(--space); align-items: start; }
+.report-list > .empty { grid-column: 1 / -1; }
+.report-list h3 { margin-bottom: 0; }
+.report-list .timestamp { font-size: 11px; }
+.assistant-panel { max-width: none; }
+.conversation { min-height: 150px; max-height: min(460px, 50vh); gap: 12px; }
+.conversation-welcome { padding: 28px 16px; }
+.conversation-message { padding: 13px 15px; }
+.conversation-message small { margin-top: 7px; }
+.suggestions { margin-top: 16px; }
+.run-item { padding: 12px 14px; }
+.run-item > p { margin-top: 5px; }
+.run-item .timestamp { font-size: 11px; }
+.form-grid { gap: 14px; }
+.settings-tabs { margin-bottom: 18px; }
+.detail-list { gap: 10px; }
+pre.run-meta { white-space: pre-wrap; overflow-wrap: anywhere; }
+.sources ul { margin-top: 8px; }
+@media (min-width: 1700px) { #crewGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 1150px) {
+  .content { padding: 18px; }
+  .overview-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-split, .wellbeing-layout { grid-template-columns: minmax(0, 1fr) minmax(260px, 1fr); }
+  #subjectPicker select { max-width: 190px; }
+}
+@media (max-width: 960px) {
+  .topbar { padding: 10px 16px; }
+  .tb-right { flex-wrap: wrap; gap: 8px; }
+  .anatomy-stage { height: 440px; }
+  .sleep-layout { grid-template-columns: minmax(160px, 210px) minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  .content { padding: 16px 12px 24px; }
+  .sec-head h1 { font-size: 22px; }
+  .card { padding: 14px; }
+  .anatomy-card { padding: 0; }
+  .two-columns, .dashboard-split, .wellbeing-layout, .sleep-layout, .explorer-layout, #crewGrid { grid-template-columns: minmax(0, 1fr); }
+  .sensor-kpis, .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .topbar { gap: 8px 10px; }
+  .tb-right { width: 100%; padding-left: 0; justify-content: space-between; }
+  #subjectPicker { min-width: 0; flex: 1; }
+  #subjectPicker label { gap: 4px; flex-wrap: wrap; }
+  #subjectPicker select { max-width: 100%; font-size: 11px; }
+  .mission-clock { padding-right: 10px; }
+  .mission-clock small { font-size: 9.5px; }
+  .mission-clock .header-time { font-size: 15px; }
+  .anatomy-stage { height: 400px; }
+  .anatomy-toolbar { flex-wrap: wrap; }
+  .chart-head { flex-wrap: wrap; }
+  .issue-list li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .report-toolbar { align-items: flex-start; flex-wrap: wrap; }
+  .event-item > .row { justify-content: flex-start; }
+  .conversation-message { max-width: 100%; }
+  .stats { gap: 7px 14px; }
+  .btn, .chip, .icon-btn { min-height: 44px; }
+  .clock-play { width: 40px; height: 40px; }
+}

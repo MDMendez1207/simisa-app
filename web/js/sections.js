@@ -1,23 +1,27 @@
 import {escapar as esc} from './core/utilidades.js';
-import {METRIC_DESCRIPTION} from './presentation.js';
+import {timeMarkup} from './core/formatos.js';
+import {METRIC_DESCRIPTION, referenceText} from './presentation.js';
+import {hasReference} from '../../shared/catalog.js';
 import {summarize} from '../../shared/results.js';
+import {deviceStatus, LOW_BATTERY} from '../../shared/devices.js';
+import {HAZARDS, RISKS, INDICATOR_GUIDE, GUIDE_DISCLAIMER} from '../../shared/health-guide.js';
 
 const historyTable = rows => `<div class="table-scroll"><table><thead><tr><th>Adquisición UTC</th><th>Valor</th><th>Unidad</th><th>Calidad</th><th>Disponibilidad</th></tr></thead><tbody id="historyRows">${rows}</tbody></table></div>`;
 
 export function sleepPage(c) {
   return c.heading('Sueño y descanso', 'Duración del descanso informada por el sensor de sueño.') + c.timeline() +
-    `<div class="two-columns"><div class="stack"><div id="readings" data-metrics="sleep">${c.readingCard('sleep')}</div><div class="card"><h2>Origen de los datos</h2><p class="hint">Las horas de sueño provienen del sensor de descanso y se conservan por fecha de adquisición. No se cargan a mano. Las fases del sueño y las interrupciones se mostrarán cuando un sensor las informe.</p></div></div>
+    `<div class="two-columns sleep-layout"><div id="readings" data-metrics="sleep">${c.readingCard('sleep')}</div>
     <div class="card" id="chartBlock">${c.chartBlock()}</div></div><div class="card section-gap"><h2>Historial de descanso</h2>${historyTable(c.tableRows())}</div>`;
 }
 
 export function wellbeingPage(c) {
-  const last=c.activity?.filter(e=>e.type==='wellbeing'&&e.elapsedSec<=c.elapsed).at(-1);
-  return c.heading('Bienestar psicológico', 'Chequeo psicológico del astronauta y descanso medido por sensor.') + c.timeline() +
-    `<div class="kpi-grid" id="readings" data-metrics="stress,sleep">${['stress', 'sleep'].map(c.readingCard).join('')}</div><div class="two-columns section-gap"><div class="card" id="chartBlock">${c.chartBlock()}</div><div class="stack"><div class="card"><h2>Estado de ánimo</h2><p>${last?esc(last.payload.mood):'Sin chequeos registrados'}</p></div><div class="card"><h2>Último chequeo psicológico</h2><p>${last?`Estrés percibido ${last.payload.stress}/10${last.payload.note?` · ${esc(last.payload.note)}`:''}`:'Completá el chequeo psicológico para comenzar el seguimiento.'}</p></div></div></div>`;
+  const last=(c.index.stress||[]).filter(r=>r.elapsedSec<=c.elapsed).at(-1);
+  return c.heading('Bienestar psicológico', 'Chequeo psicológico del tripulante y descanso medido por sensor.') + c.timeline() +
+    `<div class="two-columns wellbeing-layout"><div class="card" id="chartBlock">${c.chartBlock()}</div><div class="stack"><div class="kpi-grid" id="readings" data-metrics="stress,sleep">${['stress', 'sleep'].map(c.readingCard).join('')}</div><div class="card"><div class="row between"><h2>Último chequeo</h2>${last?timeMarkup(last.timestamp):''}</div><p>${last?`${esc(last.mood)} · Estrés ${last.value}/10`:'Sin chequeos registrados'}</p>${last?.note?`<p class="hint">${esc(last.note)}</p>`:''}</div></div></div>`;
 }
 
 export function chatView(messages) {
-  return messages.length ? messages.map(m => `<article class="conversation-message ${m.author === 'user' ? 'from-user' : ''}"><strong>${m.author === 'user' ? 'Vos' : 'SIMISA'}</strong><p>${esc(m.text)}</p>${m.time ? `<small>${esc(m.time)}</small>` : ''}</article>`).join('') : '<div class="conversation-welcome"><h2>¿Qué querés consultar?</h2><p>Revisá tus lecturas, cambios y disponibilidad de sensores.</p></div>';
+  return messages.length ? messages.map(m => `<article class="conversation-message ${m.author === 'user' ? 'from-user' : ''}"><strong>${m.author === 'user' ? 'Vos' : 'SIMISA'}</strong><p>${esc(m.text)}</p>${m.time ? `<small>${timeMarkup(m.time)}</small>` : ''}</article>`).join('') : '<div class="conversation-welcome"><h2>¿Qué querés consultar?</h2><p>Revisá tus lecturas, cambios y disponibilidad de sensores.</p></div>';
 }
 
 export function assistantPage(c) {
@@ -26,31 +30,90 @@ export function assistantPage(c) {
     <form id="assistantForm" class="assistant-form"><label class="sr-only" for="assistantInput">Tu consulta</label><input id="assistantInput" name="question" placeholder="Escribí tu consulta…" maxlength="500" required><button class="btn primary" type="submit">Consultar</button></form></div>`;
 }
 
+const ext = (item, cls = '') => `<a class="${cls}" href="${item.url}" target="_blank" rel="noreferrer">${esc(item.name)}</a>`;
+
+/** Información médica: peligros del vuelo (NASA HRP) y guía de cada indicador con sus fuentes. */
 export function medicalPage(c) {
-  return c.heading('Información médica', 'Indicadores, sistemas corporales y material de consulta.') + `<label class="section-toolbar">Buscar en la biblioteca<input id="librarySearch" type="search" placeholder="Indicador o sistema corporal"></label><div class="quality-grid sources section-gap">${c.indicators.map(m => `<article class="card" data-library><div class="eyebrow">${esc(m.sistema)}</div><h2>${esc(m.nombre)}</h2><p>${esc(METRIC_DESCRIPTION[m.clave] || '')}</p><p class="hint section-gap">Unidad: ${esc(m.unidad)}<br>Referencia configurada: ${m.lo}–${m.hi} ${esc(m.unidad)}</p><details class="section-gap"><summary>Consultar registro</summary><p>${c.result ? c.readingCard(m.clave) : 'Elegí un historial para consultar mediciones.'}</p></details></article>`).join('')}</div>
-    <div class="two-columns section-gap sources"><div class="card"><h2>Biblioteca</h2><ul><li><a href="https://www.nasa.gov/hrp/hazards/" target="_blank" rel="noreferrer">NASA · Salud y riesgos del vuelo espacial</a></li><li><a href="https://openstax.org/books/anatomy-and-physiology-2e/pages/22-2-the-lungs" target="_blank" rel="noreferrer">OpenStax · Anatomía de los pulmones</a></li><li><a href="https://www.nasa.gov/reference/nasa-std-3001v1/" target="_blank" rel="noreferrer">NASA-STD-3001 · Crew Health</a></li></ul></div><div class="card"><h2>Protocolos</h2><p class="hint">Todavía no se incorporaron documentos de protocolos a la biblioteca.</p></div></div>`;
-}
-
-export function earthPage(c) {
-  return c.heading('Comunicación Tierra', 'Informes de seguimiento y estado del enlace.') + `<div class="two-columns"><div class="card"><h2>Estado del enlace</h2><span class="tag neutral">Sin destino vinculado</span><dl class="detail-list section-gap"><dt>Último envío</dt><dd>Sin envíos registrados</dd><dt>En tránsito</dt><dd>0 informes</dd><dt>Recibidos</dt><dd>0 confirmaciones</dd></dl></div><div class="card"><h2>Informe de seguimiento</h2><p>El historial de ${esc(c.result.subject.name)} reúne ${c.result.measurements.length.toLocaleString('es-AR')} observaciones y ${c.result.events.length} eventos.</p><p class="hint section-gap">Incluye indicadores, unidades, fechas y calidad de cada lectura.</p><a class="btn primary section-gap" href="/api/runs/${c.result.id}/file">Descargar informe</a></div></div><div class="card section-gap"><h2>Actividad de comunicación</h2><p class="empty">No hay transferencias registradas.</p></div>`;
-}
-
-export function profilesPage(c) {
-  const initials = c.result.subject.name.split(' ').map(word => word[0]).join('');
-  return c.heading('Perfiles y permisos', 'Perfil consultado y acceso a la información.') + `<div class="quality-grid"><article class="card profile-card"><div class="profile-avatar">${esc(initials)}</div><h2>${esc(c.result.subject.name)}</h2><span class="tag cyan">Astronauta</span><dl class="detail-list section-gap"><dt>Identificador</dt><dd>${esc(c.result.subject.id)}</dd><dt>Indicadores</dt><dd>${c.result.indicators.length}</dd><dt>Observaciones</dt><dd>${c.result.measurements.length.toLocaleString('es-AR')}</dd></dl></article>
-    <article class="card"><h2>Equipo médico</h2><p class="hint">Sin usuarios asignados.</p></article><article class="card"><h2>Investigación</h2><p class="hint">Sin usuarios asignados.</p></article></div><div class="card section-gap"><h2>Administración de acceso</h2><p>No hay cuentas ni permisos configurados.</p></div>`;
+  const hazards = Object.values(HAZARDS).map(h => `<article class="card hazard-card"><h3>${ext(h)}</h3><p class="hint">${esc(h.text)}</p></article>`).join('');
+  const card = m => {
+    const g = INDICATOR_GUIDE[m.clave];
+    return `<article class="card library-card" data-library><div class="eyebrow">${esc(m.sistema)}</div><h2>${esc(m.nombre)}</h2><p>${esc(METRIC_DESCRIPTION[m.clave] || '')}</p>
+      ${g ? `<p class="section-gap"><strong>Por qué se mide en el espacio.</strong> ${esc(g.why)}</p>
+      <div class="hazard-chips">${g.hazards.map(h => ext(HAZARDS[h], 'chip-link')).join('')}</div>
+      <p class="hint section-gap"><strong>Cómo se mide:</strong> ${esc(g.measure)}<br>${esc(referenceText(m))}${hasReference(m) ? ' (ilustrativa)' : ''}</p>
+      <details class="guide-more"><summary>Prevención y riesgos relacionados</summary><ul>${g.prevent.map(p => `<li>${esc(p)}</li>`).join('')}</ul>
+        <ul class="risk-list">${g.risks.map(r => `<li>${ext(RISKS[r])}: ${esc(RISKS[r].text)}</li>`).join('')}</ul></details>` : ''}
+      <details class="guide-more"><summary>Consultar registro</summary>${c.result ? c.readingCard(m.clave) : '<p>Elegí un historial para consultar mediciones.</p>'}</details></article>`;
+  };
+  return c.heading('Información médica', 'Cómo afecta el vuelo espacial a la salud, qué se mide y qué hacer.') +
+    `<div class="card escalation"><h2>¿A quién recurrir?</h2><ol class="escalation-steps">
+      <li class="ok"><b>Autocuidado</b><span>Indicador en rango: mantener la rutina preventiva (ejercicio, descanso, alimentación, chequeo diario).</span></li>
+      <li class="warn"><b>Médica de tripulación</b><span>Un valor fuera de referencia: repetir la medición, anotar síntomas y avisarle.</span></li>
+      <li class="bad"><b>Médicos de vuelo en Tierra</b><span>Si se mantiene fuera de referencia, la médica de tripulación evalúa la consulta, teniendo en cuenta la demora de comunicación.</span></li></ol>
+      <p class="hint">${esc(GUIDE_DISCLAIMER)}</p></div>
+    <h2 class="section-gap">Los cinco peligros del vuelo espacial</h2><div class="hazard-grid">${hazards}</div>
+    <div class="row between section-gap"><h2>Indicadores</h2><label class="inline-select">Buscar<input id="librarySearch" type="search" placeholder="Indicador o sistema corporal"></label></div>
+    <div class="quality-grid sources">${c.indicators.map(card).join('')}</div>
+    <div class="card section-gap sources"><h2>Fuentes</h2><ul>
+      <li>${ext({name: 'NASA HRP · 5 Hazards of Human Spaceflight', url: 'https://www.nasa.gov/hrp/hazards/'})}</li>
+      <li>${ext({name: 'NASA HRP · Risks of Human Spaceflight', url: 'https://www.nasa.gov/hrp/risks/'})}</li>
+      <li>${ext({name: 'NASA HRP · Ongoing HRP Research in Space', url: 'https://www.nasa.gov/hrp/ongoing-hrp-research/'})}</li>
+      <li>${ext({name: 'CSA · Monitoring Radiation for Astronaut Health', url: 'https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp'})}</li>
+      <li>${ext({name: 'CSA · Why Do We Conduct Science Experiments in Space?', url: 'https://www.asc-csa.gc.ca/eng/iss/science/why-do-we-conduct-science-experiments-in-space.asp'})}</li>
+      <li>${ext({name: 'OpenStax · The Lungs', url: 'https://openstax.org/books/anatomy-and-physiology-2e/pages/22-2-the-lungs'})}</li></ul>
+      <p class="hint">No se incorporaron protocolos clínicos: la orientación es general y no indica tratamientos ni dosis.</p></div>`;
 }
 
 export function researchData(result, index, elapsed) {
   return result.indicators.map(m => ({id: m.clave, indicator: m.nombre, unit: m.unidad, decimals: m.decimals,
     ...summarize(result, index, m.clave, elapsed)}));
 }
+/** Estadísticas de toda la tripulación. `views`: [{member, result, index}] (una vista por tripulante). */
+export function researchCrewData(views, elapsed) {
+  return views.flatMap(v => researchData(v.result, v.index, elapsed).map(r => ({...r, member: v.member})));
+}
 export function researchRows(c) {
-  return researchData(c.result, c.index, c.elapsed).map(row => `<tr><td>${esc(row.indicator)}</td><td>${row.count}</td><td>${row.min == null ? '—' : row.min.toFixed(row.decimals)}</td><td>${row.mean == null ? '—' : row.mean.toFixed(row.decimals)}</td><td>${row.max == null ? '—' : row.max.toFixed(row.decimals)}</td><td>${esc(row.unit)}</td></tr>`).join('');
+  const fmt = (v, d) => v == null ? '—' : v.toFixed(d);
+  return researchCrewData(c.crewViews(), c.elapsed).filter(r => c.researchMetric === 'all' || r.id === c.researchMetric)
+    .map(row => `<tr><td>${esc(row.member.name)}</td><td>${esc(row.indicator)}</td><td>${row.count}</td><td>${fmt(row.min, row.decimals)}</td><td>${fmt(row.mean, row.decimals)}</td><td>${fmt(row.max, row.decimals)}</td><td>${esc(row.unit)}</td></tr>`).join('');
 }
 export function researchPage(c) {
-  return c.heading('Investigación', 'Estadísticas de los indicadores en el período consultado.', '<button class="btn" data-action="exportResearch">Exportar tabla</button>') + c.timeline() +
-    `<div class="card"><div class="row between"><h2>Resumen por indicador</h2><span class="tag info">1 perfil</span></div><div class="table-scroll"><table><thead><tr><th>Indicador</th><th>Lecturas válidas</th><th>Mínimo</th><th>Media</th><th>Máximo</th><th>Unidad</th></tr></thead><tbody id="researchRows">${researchRows(c)}</tbody></table></div></div>`;
+  return c.heading('Investigación', 'Estadísticas de la tripulación hasta la hora de misión actual.', '<button class="btn" data-action="exportResearch">Exportar tabla</button>') + c.timeline() +
+    `<div class="card"><div class="row between"><h2>Resumen por tripulante e indicador</h2><span class="tag info">${c.crew.length} tripulantes</span></div>
+    <label class="inline-select section-gap">Indicador<select id="researchMetric"><option value="all">Todos</option>${c.indicators.map(m => `<option value="${m.clave}" ${c.researchMetric === m.clave ? 'selected' : ''}>${esc(m.nombre)}</option>`).join('')}</select></label>
+    <div class="table-scroll section-gap"><table><thead><tr><th>Tripulante</th><th>Indicador</th><th>Lecturas válidas</th><th>Mínimo</th><th>Media</th><th>Máximo</th><th>Unidad</th></tr></thead><tbody id="researchRows">${researchRows(c)}</tbody></table></div></div>`;
+}
+export function researchCrewCSV(views, elapsed) {
+  const fields = ['Tripulante', 'Indicador', 'Unidad', 'Lecturas válidas', 'Mínimo', 'Media', 'Máximo', 'Origen de los datos'];
+  const origin = (v, id) => [...new Set((v.index[id] || []).map(row => row.captureMethod))].join(', ') || '—';
+  const rows = views.flatMap(v => researchData(v.result, v.index, elapsed).map(r => [v.member.name, r.indicator, r.unit, r.count, r.min, r.mean, r.max, origin(v, r.id)]));
+  return '\uFEFF' + [fields, ...rows].map(row => row.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+}
+
+/** Centro de tripulación: estado general de cada tripulante en el momento consultado. */
+const CREW_METRICS = ['hr', 'spo2', 'rr', 'temp', 'sys'];
+export function crewCards(c) {
+  return c.crewViews().map(({member, result, index, activity}) => {
+    const at = id => c.observationAt(result, index, id, c.elapsed);
+    const sensors = result.indicators.filter(m => c.isSensorMetric(m.clave));
+    const outside = sensors.filter(m => at(m.clave).current && at(m.clave).condition === 'outside');
+    const offline = sensors.filter(m => !at(m.clave).current && m.periodSec <= 300);
+    const lowBattery = deviceStatus(result, index, c.elapsed).filter(d => d.battery != null && d.battery < LOW_BATTERY);
+    const reviewed = new Set(activity.filter(a => a.type === 'acknowledge').map(a => a.payload.eventId));
+    const pending = result.events.filter(e => e.elapsedSec <= c.elapsed && e.type === 'indicator' && e.state === 'outside' && !reviewed.has(e.id)).length;
+    const last = (index.stress || []).filter(r => r.elapsedSec <= c.elapsed).at(-1);
+    const check = last && {payload: {mood: last.mood, stress: last.value}};
+    const status = outside.length || offline.length || lowBattery.length ? ['warn', 'Requiere atención'] : ['ok', 'Estable'];
+    const value = id => { const m = result.indicators.find(i => i.clave === id), o = at(id); return `<div><small>${esc(m.nombre)}</small><strong class="${o.current && o.condition === 'outside' ? 'warn-text' : ''}">${o.current ? o.current.value.toFixed(m.decimals) : '—'}</strong> <span class="ku">${esc(m.unidad)}</span></div>`; };
+    return `<article class="card crew-card tone-${status[0]} ${member.id === c.subject.id ? 'selected' : ''}"><div class="crew-head"><span class="crew-avatar ${esc(member.role)}">${esc(member.name.split(' ').map(w => w[0]).join(''))}</span><div><h2>${esc(member.name)}</h2><small>${esc(member.code)} · ${esc(c.roles[member.role].name)}</small></div></div><span class="pill ${status[0]} crew-status">${status[1]}</span>
+      <div class="crew-values section-gap">${CREW_METRICS.map(value).join('')}</div>
+      <p class="hint crew-notes">${outside.length ? `Fuera de referencia: ${outside.map(m => esc(m.nombre)).join(', ')}. ` : ''}${offline.length ? `Sin lectura: ${offline.map(m => esc(m.nombre)).join(', ')}. ` : ''}${lowBattery.length ? `Batería baja: ${lowBattery.map(d => `${esc(d.device.name)} (${d.battery} %)`).join(', ')}. ` : ''}${pending ? `${pending} alerta(s) sin revisar. ` : ''}${check ? `Último chequeo: ${esc(check.payload.mood)}, estrés ${check.payload.stress}/10.` : 'Sin chequeo psicológico.'}</p>
+      <div class="row crew-actions"><button class="btn" data-action="viewMember" data-id="${esc(member.id)}">Ver detalle</button><button class="btn ghost" data-action="viewMember" data-id="${esc(member.id)}" data-go="alertas">Alertas</button></div></article>`;
+  }).join('');
+}
+export function crewPage(c) {
+  return c.heading('Centro de tripulación', 'Estado general de salud de cada tripulante a la hora de misión actual.') + c.timeline() +
+    `<div class="quality-grid" id="crewGrid">${crewCards(c)}</div>`;
 }
 
 export function researchCSV(result, index, elapsed) {

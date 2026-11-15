@@ -1,6 +1,6 @@
 # SIMISA · Simulación y anatomía
 
-Proyecto nuevo construido a partir de `SIMISA_modular/SIMISA_entrega`. Los originales del directorio padre se conservan. Requiere Node.js 22 o posterior; no necesita descargar dependencias.
+Prototipo para el desafío *Create Health Monitoring Software for Astronauts on Space Missions* de NASA Space Apps 2026 ([enunciado y cobertura](docs/challenge.md)). Proyecto nuevo construido a partir de `SIMISA_modular/SIMISA_entrega`. Los originales del directorio padre se conservan. Requiere Node.js 22 o posterior; no necesita descargar dependencias.
 
 ## Abrir la aplicación
 
@@ -14,15 +14,63 @@ node server.js
 
 El servicio escucha exclusivamente en `127.0.0.1`. El puerto por defecto es 4180. Se puede cambiar mediante la variable `PORT`.
 
+## Enlace público (túnel)
+
+Para mostrar la demo desde otro equipo sin desplegar un servidor:
+
+1. Instalar una vez `cloudflared`: `winget install --id Cloudflare.cloudflared` (cerrar y reabrir la consola).
+2. Ejecutar **Publicar SIMISA.cmd**. Abre el servidor en otra ventana y muestra un enlace `https://<algo>.trycloudflare.com`.
+3. Para una demo pública sin escrituras remotas: `"Publicar SIMISA.cmd" lectura`. Desde el túnel se rechazan los `POST` (simulaciones, chequeos, informes); en `127.0.0.1` todo sigue habilitado.
+
+El servidor sigue escuchando solo en `127.0.0.1`; el túnel es quien lo expone. Solo se aceptan los hosts de `SIMISA_PUBLIC_HOSTS` (lista separada por comas, admite `*.dominio`), y las escrituras exigen que el origen coincida con ese host. `SIMISA_READONLY=1` activa el modo lectura. Cerrar la ventana del túnel corta el acceso. Cualquiera con el enlace puede ver los datos: no cargar información personal real.
+
+## Tripulación y permisos
+
+SIMISA funciona como centro de control de una tripulación ficticia de cuatro personas. Al abrir la web se elige quién ingresa (identificación de demostración, sin contraseña); el servidor aplica los permisos según ese tripulante mediante una cookie de sesión.
+
+| Tripulante | Rol | Acceso |
+| --- | --- | --- |
+| Ana Torres (CDR) | Comandante | Toda la tripulación: Centro de tripulación, alertas, investigación y simulación |
+| Lucía Ferreyra (CMO) | Médica de tripulación | Igual que comandante |
+| Kenji Mori (MS1) | Especialista de misión | Solo su propia información |
+| Omar Haddad (MS2) | Especialista de misión | Solo su propia información |
+
+- Sin acceso de tripulación, la API entrega solo la vista propia de la ejecución y de la actividad; las demás vistas devuelven 403.
+- Cada tripulante completa únicamente su propio chequeo psicológico (ánimo y estrés percibido). Comandante y médica pueden consultarlo, no completarlo por otro.
+- Los episodios preparados de los escenarios (SpO₂, desconexión, señal inválida) afectan a Kenji Mori; el resto de la tripulación varía dentro de referencia.
+
+## Estado de sensores
+
+Cada tripulante usa nueve dispositivos (`shared/devices.js`): los ocho de SIMISA_entrega (ECG · Parche torácico, Oxímetro de pulso, Banda respiratoria, Sensor térmico dérmico, Tensiómetro biométrico, Biosensor metabólico, Actígrafo de sueño y Densitómetro óseo portátil) más un **Dosímetro personal**. La página muestra un resumen (conectados, con advertencias, sin señal), un recuadro de **posibles problemas** y el inventario con estado, último dato válido, calidad de señal y batería.
+
+- Estado y calidad se calculan con las lecturas guardadas: desconexión, datos inválidos, señal débil o desactualizada. La calidad es el porcentaje de lecturas válidas entre las últimas 12.
+- La batería es una **estimación simulada** (descarga lineal y recarga diaria), no telemetría del archivo. Por debajo de 20 % se informa como problema; en el escenario, el oxímetro de Kenji llega con poca batería al episodio.
+- El Centro de tripulación también avisa de las baterías bajas.
+
+El dosímetro incorpora `rad`, **Tasa de dosis de radiación**, en **µSv/h**, una vez por minuto (cada 30 minutos en el historial previo). Se consulta en Panel general, Salud corporal → Cuerpo completo, Gráficas e historial, Información médica, Asistente e Investigación, con exportación e informes. El motor independiente también la guarda. Las gráficas largas aplican la misma agrupación por media y rango que al resto de las series continuas, sin modificar las lecturas archivadas.
+
+Su base de 20 µSv/h, oscilación de 90 minutos y ruido por semilla son recursos sintéticos para probar la aplicación, sin validación dosimétrica. La métrica es una **tasa**, no dosis acumulada ni daño por órgano. No tiene umbrales de seguridad ni genera alertas clínicas; una lectura válida aparece como «Lectura disponible». El contexto científico se enlaza a NASA HRP en Información médica. Los resultados anteriores conservan sus ocho dispositivos y no reciben lecturas inventadas; para incluir radiación hay que generar una nueva ejecución. Se leen sin reescribir todos los motores anteriores compatibles.
+
+## Historial previo
+
+`historyDays` (0–30; formulario **Historial previo (días)** o `--history` en la CLI) genera días anteriores al inicio de la ejecución, con tiempos negativos:
+
+- Signos vitales cada 30 minutos con ritmo día/noche, sueño diario y densitometría ósea según su período (28 días).
+- Un chequeo psicológico sintético por día y tripulante, guardado en el archivo (`checkins`) y marcado como **Historial sintético**; no se confunde con los chequeos registrados.
+- En Kenji Mori, el descanso empeora y el estrés percibido aumenta en los últimos días, como antesala del episodio.
+- Las gráficas permiten elegir el período (Todo, 14 días, 3 días, 24 h, 1 h) y marcan el inicio de la ejecución. **Inicio del historial** en Configuración → Simulación lleva al primer día.
+
+Los ejemplos incluidos tienen 14 días de historial (unos 10 MB por archivo).
+
 ## Primer recorrido completo
 
-1. Abrir **Configuración → Simulación**. Elegir nombre, escenario, semilla, duración, paso e inicio UTC.
+1. Ingresar como Ana Torres (comandante) o Lucía Ferreyra (médica) y abrir **Configuración → Simulación**. Elegir nombre, escenario, semilla, duración, paso e inicio UTC.
 2. Pulsar **Ejecutar y guardar**. La aplicación calcula, escribe el archivo, verifica su integridad y vuelve a leerlo antes de mostrarlo.
 3. Explorar **Salud corporal**. Seleccionar corazón, pulmones u otra región; usar el control temporal, zoom, arrastre o teclado.
 4. Cerrar la aplicación local y el navegador. Volver a iniciar `Iniciar SIMISA.cmd`.
 5. Elegir la ejecución guardada y explorarla otra vez. La recuperación no ejecuta el motor ni genera curvas nuevas.
 
-La exploración comienza pausada al inicio de la ejecución. Los controles de reproducción y **Ir al primer evento** están solamente en **Configuración → Simulación**. Las vistas de consulta conservan un selector de momento para recorrer el historial. La reproducción avanza sobre registros ya guardados y se pausa al ocultar la ventana. Elegir un nuevo resultado reinicia solamente su exploración, sin borrar archivos.
+Toda la web usa un único **reloj de misión**, visible en la barra superior con un botón de reproducir/pausar: cada vista muestra el estado a esa hora. Al abrir una ejecución, el reloj queda en pausa dos minutos antes de su primer evento (el episodio de Kenji Mori en el escenario de recorrido); al reproducir, la demo avanza en todas las pantallas a la vez. La barra de tiempo, la velocidad, **Inicio del historial** e **Ir al primer evento** están solo en **Configuración → Simulación**. El pasado se consulta con el selector de **Período** de las gráficas y con las tablas; **Explorar momento** en Alertas lleva el reloj a ese evento. La reproducción avanza sobre registros ya guardados y se pausa al ocultar la ventana. Elegir un nuevo resultado reinicia solamente su exploración, sin borrar archivos.
 
 ## Simulador independiente
 
@@ -63,7 +111,7 @@ Los signos vitales y el sueño provienen exclusivamente de sensores médicos sim
 
 Son datos sintéticos para probar software. Las referencias numéricas, relaciones, períodos y eventos son demostrativos, sin validación fisiológica o clínica. Las imágenes son ilustraciones 2D generadas con IA, con detalles independientes y zoom limitado a su resolución. No permiten rotación 3D ni diagnóstico. Se conserva la [procedencia anatómica](web/assets/PROCEDENCIA.md) y sus prompts.
 
-La navegación conserva las 13 opciones originales de SIMISA_entrega. Sueño consulta las lecturas del sensor de descanso; Bienestar psicológico permite completar y consultar el chequeo psicológico junto al descanso; el asistente ofrece respuestas locales guiadas sobre las lecturas y chequeos seleccionados; Investigación calcula y exporta estadísticas. Comunicación Tierra permite preparar, entregar en bandeja local y descargar informes; Perfiles permite alternar el perfil local (`Astronauta`, `Equipo médico`, `Investigador`). No se inventan fases de sueño, conexiones externas ni autenticación de servidor.
+La navegación conserva las 13 opciones originales de SIMISA_entrega. Sueño consulta las lecturas del sensor de descanso; Bienestar psicológico permite completar y consultar el chequeo psicológico junto al descanso; el asistente ofrece respuestas locales guiadas sobre las lecturas y chequeos seleccionados; Investigación calcula y exporta estadísticas. Comunicación Tierra permite preparar, entregar en bandeja local y descargar informes; Perfiles muestra la tripulación, los permisos de cada rol y permite cambiar de tripulante; el Centro de tripulación (solo comandante y médica) resume el estado de cada integrante. No se inventan fases de sueño, conexiones externas ni autenticación de servidor.
 
 Los parámetros, la selección de resultados, los controles de reproducción, la procedencia y los límites de los datos se concentran en **Configuración → Simulación**. Las demás vistas presentan las lecturas sin carteles de demo, identificadores de archivo ni aclaraciones repetidas. La clasificación y procedencia sintética siguen conservadas en los archivos y exportaciones.
 
@@ -76,7 +124,9 @@ node --test
 node scripts/verify-originals.js
 ```
 
-Las pruebas comprueban reproducción exacta, restricciones y frecuencias, presión pareada, episodios, ausencias, recuperación, calidad, corrupción de archivos, guardado idempotente, API y reinicio real del proceso después de generar una ejecución con la CLI. El segundo comando coteja los 79 archivos originales con las huellas tomadas antes de crear el proyecto.
+Las pruebas (18, en `test/`, incluidas permisos de tripulación e historial previo) comprueban reproducción exacta, restricciones y frecuencias, presión pareada, episodios, ausencias, recuperación, calidad, corrupción de archivos, guardado idempotente, API, reinicio real del proceso después de generar una ejecución con la CLI, actividad registrada (chequeo psicológico, revisiones, informes, envío único ante solicitudes simultáneas, tolerancia a archivos dañados), acceso por túnel y consultas del asistente e investigación. El segundo comando coteja los 79 archivos originales con las huellas tomadas antes de crear el proyecto; solo funciona dentro de la carpeta SIMISA original, porque esos archivos están fuera de este repositorio.
+
+Durante el desarrollo no se ejecuta la batería completa tras cada cambio: se usa `node --check <archivo>` y solo el archivo de prueba afectado (`test/simulation.test.js`, `test/activity.test.js` o `test/consultation.test.js`). La batería completa se reserva para cerrar una fase o antes de un commit. Detalle en la skill `simisa-modo-rapido` (`../.opencode/skills/simisa-modo-rapido/SKILL.md`).
 
 La revisión del navegador y sus límites se registran en [Validación](docs/validacion.md).
 
@@ -91,5 +141,8 @@ La revisión del navegador y sus límites se registran en [Validación](docs/val
 | `server.js` | Servicio local y lectura de archivos para la interfaz |
 | `web/` | Interfaz derivada de SIMISA_entrega y assets conservados |
 | `data/runs/` | Ejecuciones persistidas |
+| `data/legacy-*/` | Ejemplos de versiones anteriores del motor, archivados sin cambios |
+| `shared/crew.js` | Tripulación ficticia, roles y reglas de acceso |
+| `Publicar SIMISA.cmd` | Servidor + túnel de Cloudflare para un enlace público |
 | `test/` | Pruebas funcionales |
 | `docs/` | Decisiones, evidencia y manifiesto de originales |

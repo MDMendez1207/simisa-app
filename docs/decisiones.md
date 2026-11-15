@@ -23,6 +23,27 @@ Las opciones recuperadas consultan datos reales de los archivos: Sueño consulta
 
 Por indicación expresa del usuario, las mediciones de signos vitales y sueño provienen exclusivamente de sensores médicos y no admiten ingreso manual (`measurement` y `sleep` manuales quedan rechazados). El bienestar psicológico sí se ingresa a mano mediante el chequeo psicológico (`wellbeing`), de donde se obtiene el indicador `stress`.
 
+## Tripulación y permisos (motor 2.0.0, esquema 2)
+
+Por indicación del usuario, la web es un centro de control de una tripulación ficticia de cuatro personas (`shared/crew.js`). Una ejecución simula a todos sus integrantes; cada medición y evento lleva `subjectId`. Los resultados de esquema 1 (un solo sujeto) siguen siendo legibles.
+
+- Comandante y médica de tripulación consultan a toda la tripulación; los especialistas, solo su información. El servidor filtra ejecución, archivo descargado y actividad según el tripulante de la sesión.
+- La sesión es una cookie `HttpOnly; SameSite=Strict` con el tripulante elegido, sin contraseña. Es una identificación de demostración, no autenticación.
+- La actividad registra `subjectId` (sobre quién) y `authorId` (quién). El chequeo psicológico y las preferencias solo se registran sobre uno mismo. Se elimina el selector de perfil local (`Astronauta`, `Equipo médico`, `Investigador`); Investigación pasa a ser una vista de tripulación.
+- Los episodios preparados afectan a un único tripulante (Kenji Mori) para que el Centro de tripulación muestre quién requiere atención.
+
+## Historial previo (motor 2.1.0)
+
+A pedido del usuario, una ejecución puede incluir hasta 30 días anteriores a su inicio (`historyDays`). Se usan tiempos negativos para no alterar el reloj de la ejecución ni sus escenarios. El historial se muestrea cada 30 minutos (`HISTORY_STEP_SEC`) para que el archivo sea manejable; la vigencia de una lectura se evalúa con ese espaciado.
+
+Los chequeos psicológicos del historial son sintéticos y se guardan dentro del resultado inmutable (`checkins`, `synthetic: true`), separados del registro de actividad. La telemetría sigue sin contener estrés. Los chequeos registrados por cada tripulante continúan en la actividad. Los resultados `synthetic-2.0.0` se siguen leyendo.
+
+## Guía de salud con recursos de NASA HRP
+
+El desafío pide orientación sobre tratamientos y mejoras de salud. Se usan los recursos oficiales *5 Hazards of Human Spaceflight* y *Risks of Human Spaceflight* (`shared/health-guide.js`) para explicar por qué se mide cada indicador en el espacio, qué peligros y riesgos lo afectan, cómo se mide y qué prevención general menciona NASA (ejercicio, descanso, alimentación, procedimientos de caminata espacial).
+
+La orientación según el estado sigue una escala de la demo: en rango → autocuidado; sin lectura válida → revisar el dispositivo; fuera de referencia → repetir la medición y avisar a la médica de tripulación; más de 10 minutos seguidos fuera (o dos registros diarios o periódicos seguidos) → la médica evalúa consultar a los médicos de vuelo en Tierra. No es un criterio clínico: las referencias siguen siendo ilustrativas. No se indican tratamientos, medicamentos ni dosis, y cada texto muestra la aclaración correspondiente.
+
 ## Definiciones resueltas
 
 | Tema | Decisión | Procedencia y límite |
@@ -55,7 +76,7 @@ Un reloj único avanza por pasos configurables. Una variable preparada de activi
 
 Los períodos elegidos para probar el software en sensores son: 10 s para pulso/respiración/oxigenación, 60 s para temperatura, 300 s para presión y glucosa, un día para sueño y 28 días para densidad ósea. Cada ejecución empieza con una observación sintética de referencia por indicador de sensor (`synthetic-1.1.0` / `entrega-1.1.0`). El estrés percibido (`stress`) no es generado por el motor: se incorpora a partir de los chequeos psicológicos registrados por el astronauta (`captureMethod: 'self_report'`). Los archivos anteriores (`1.0.0`) siguen siendo legibles sin reescribirse, pero sus valores sintéticos de estrés no se presentan como lecturas de sensor. Un paso mayor reduce la frecuencia efectiva; el archivo conserva los tiempos realmente adquiridos.
 
-Las condiciones se evalúan directamente contra las bandas de entrega, sin confirmar duración clínica ni severidad. Puede haber cruces breves de referencia cerca de un límite. Los eventos se conservan con evidencia; no se confunde reconocer un mensaje con modificar un dato. Esta versión presenta los eventos como consulta, sin un flujo de reconocimiento ni registro de acciones médicas.
+Las condiciones se evalúan directamente contra las bandas de entrega, sin confirmar duración clínica ni severidad. Puede haber cruces breves de referencia cerca de un límite. Los eventos se conservan con evidencia; no se confunde reconocer un mensaje con modificar un dato. Cada evento puede marcarse como **Revisada**: se guarda como actividad `acknowledge` en el registro de la ejecución, sin alterar el archivo de simulación. No existe registro de acciones médicas ni de quién revisó más allá del perfil local seleccionado.
 
 Con desconexión se guardan muestras nulas y la última válida se conserva. Al reconectar, la fuente recupera disponibilidad con una observación nueva. Una lectura inválida o de baja calidad no aporta valor actual, promedio ni condición nueva. El historial muestra la lectura y su calidad. Estos estados son independientes de la referencia ilustrativa del indicador.
 

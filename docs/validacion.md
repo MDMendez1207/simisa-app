@@ -2,6 +2,16 @@
 
 Fecha: 14 de noviembre de 2026. Entorno: Windows, Node.js 22.22.1 y navegador integrado. Se verificó el proyecto nuevo; las afirmaciones históricas de los documentos originales no se contabilizan como pruebas de esta versión.
 
+> **Estado vigente (tripulación, 14/11/2026).** Este documento es un registro fechado: las secciones siguientes describen lo observado en cada revisión. Estado actual:
+>
+> - Motor `synthetic-2.1.0`, esquema 2 (tripulación de cuatro, historial previo opcional), catálogo `entrega-1.1.0`. `node --test`: **18 pruebas, 0 fallos**.
+> - Ejemplos en `data/runs/`: `73f50a29bda9900206fb9ccc` (Recorrido inicial, semilla 2026) y `e4dff56e3ebf522e1b6b1c8c` (Recorrido web verificado, semilla 31415), con 14 días de historial y 23 612 observaciones cada uno; los eventos corresponden solo a Kenji Mori.
+> - Ejemplos anteriores archivados fuera del listado: `1.0.0` en `data/legacy-1.0.0/`, `1.1.0` en `data/legacy-1.1.0/` y `2.0.0` (`f45533…`, `c64bc8…`) en `data/legacy-2.0.0/`.
+> - La pantalla de ingreso, el Centro de tripulación y el selector de tripulante no se revisaron todavía en navegador. Las observaciones de navegador más abajo corresponden a la versión de un solo sujeto (Ana Torres).
+> - El informe exportado y su conteo incluyen solo mediciones de sensores; el estrés llega por los chequeos registrados.
+> - Envíos simultáneos de un mismo informe registran uno solo; un archivo de actividad dañado se omite sin bloquear el resto.
+> - Acceso por túnel probado de forma automática (hosts admitidos, origen y modo solo lectura). No se probó todavía con `cloudflared` real ni en navegador.
+
 ## Resultado
 
 Se completó configurar → ejecutar → guardar en archivo → cerrar y reiniciar el servicio → recargar la aplicación → recuperar la misma ejecución → explorar sus resultados en la anatomía. La web no regeneró la serie para recuperarla.
@@ -13,11 +23,11 @@ Dos ejemplos quedan disponibles en `data/runs/`:
 | Recorrido inicial | CLI, antes de iniciar la web | `11475e010149e15f639c156a` | 1186 |
 | Recorrido web verificado | Formulario web, semilla 31415 | `26c70d9d3a1f2215821f01c6` | 1186 |
 
-La repetición de la configuración de la CLI devolvió `reused: true` y conservó el archivo existente.
+La repetición de la configuración de la CLI devolvió `reused: true` y conservó el archivo existente (comportamiento observado con el motor `1.0.0`; ver “Estado vigente”).
 
 ## Pruebas automáticas
 
-`node --test`: **8 pruebas aprobadas, 0 fallos**.
+`node --test` en esa revisión: **8 pruebas aprobadas, 0 fallos** (la batería actual tiene 14).
 
 1. Igualdad exacta del resultado al repetir la configuración, incluso después de ejecutar otro escenario; una semilla diferente cambia los datos.
 2. Unidades de entrega, frecuencias periódicas, límites de valores válidos y presión sistólica/diastólica adquiridas juntas.

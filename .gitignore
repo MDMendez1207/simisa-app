@@ -1,3 +1,10 @@
 data/runs/.*.tmp
+data/runs/*.tmp
 test-output/
 node_modules/
+
+# Ejecuciones de versiones anteriores del motor: se conservan solo en disco.
+data/legacy-*/
+
+# Copia comprimida de web/assets (las imágenes ya están en web/assets).
+web/assets.rar
