@@ -1,0 +1,318 @@
+[
+  {
+    "path": "SIMISA plan.md",
+    "sha256": "f4a8eb17299d4b407fb343c526eaded853e0c0c93c69f3fa456efaea5729b2ee"
+  },
+  {
+    "path": "assets/abdomen-oblicuo.png",
+    "sha256": "ef25e2bea466b89ec1f3b63b712f5fb7d20d14b725bd83e98e35f80f1872d6da"
+  },
+  {
+    "path": "assets/cabeza-lateral.png",
+    "sha256": "07eb32b041b987462b07b65f67591b2a1fdfb43536183d2768c6b1eda86dad09"
+  },
+  {
+    "path": "assets/corazon-oblicuo.png",
+    "sha256": "43e61b47de98e26deedbe2912ad6550a454c9489342868e2df726b6e5cc2b290"
+  },
+  {
+    "path": "assets/cuerpo-holografico-v2.png",
+    "sha256": "c85fd7d7cb5070c4f084489c0b6a8df0d9ade9a6fc70b0b59ce63e737a25c485"
+  },
+  {
+    "path": "assets/cuerpo-holografico.png",
+    "sha256": "b2e9523e2d204fae8bf130f32e5622941d5ca7bba1b7a737ca2478d1a228c746"
+  },
+  {
+    "path": "assets/piernas-oblicuas.png",
+    "sha256": "01708c2030c57e30e5e9a10f6753c191cc4ec9ec5fd2b13df78dab671893a1d3"
+  },
+  {
+    "path": "assets/PROCEDENCIA.md",
+    "sha256": "259ecda5d9eb8cc6b91b71a0af7dbf526d3cbfc556730f5c73add6843e3e4377"
+  },
+  {
+    "path": "assets/PROMPTS.json",
+    "sha256": "20e82a858f2f6096c322b3967ac6aa27f761f0224b6e61a0d863f988aafab6e9"
+  },
+  {
+    "path": "assets/pulmones-oblicuos.png",
+    "sha256": "a3e8c917464dd470a71b3eaa6b5e9d916e8be08d6ecb50f4e16873f9c9bdb3d0"
+  },
+  {
+    "path": "docs/simisa/01-plan-prototipo-30h.md",
+    "sha256": "ab4e799ae5fa11f5a0ad10c0e09e6dbc1de1c3a65683d00852d1684272404921"
+  },
+  {
+    "path": "docs/simisa/02-diseno-y-animaciones.md",
+    "sha256": "c7a9b4219d502b6b4c14e3ad66dcc09ec9fc20a5fa91bbd682468458acb1f798"
+  },
+  {
+    "path": "docs/simisa/03-tecnologia-y-arquitectura.md",
+    "sha256": "8e4c7848883ba953b4bf0808faa6909fcd558cb8da2390970569431f52451baf"
+  },
+  {
+    "path": "docs/simisa/04-integracion-nasa-y-fuentes.md",
+    "sha256": "210253e3afafa08b6fdcb5cca3a0ff6c0e73527a051f7ce704529b67793df00c"
+  },
+  {
+    "path": "docs/simisa/05-demo-y-validacion.md",
+    "sha256": "a4be8af4ff1adac4cff2eb709de1e298d79bf57302601cc0d027810dd2c40699"
+  },
+  {
+    "path": "docs/simisa/06-prompts-generales.md",
+    "sha256": "a42faca84bc0400ce2585093eb11afe974e531871a924625300aa073b0914d51"
+  },
+  {
+    "path": "docs/simisa/07-pantalla-principal.md",
+    "sha256": "4f31824641ec028b9b9ceda8e2291478048134704e8b365d4082dce87336aa54"
+  },
+  {
+    "path": "docs/simisa/08-unificacion.md",
+    "sha256": "227d41780731078d2a81e92b757449ae7c0d8abffe3789e9ab860c15cba0f08d"
+  },
+  {
+    "path": "docs/simisa/09-anatomia-compartida.md",
+    "sha256": "62c34ebaa6ebaec15a2f5a6664272df489d19d26dafdf79e7cdce1616a3c61da"
+  },
+  {
+    "path": "docs/simisa/10-app-principal-plan.md",
+    "sha256": "88f201c0d487f4d8fd2cc161a8677fa759d6b9871696cb9616e1595e154bec14"
+  },
+  {
+    "path": "docs/simisa/README.md",
+    "sha256": "7190c852f55da01c7bfea9c7a3f29e7fec703c1caddd4f040de4b2af28d0ebe0"
+  },
+  {
+    "path": "engine/simulator.js",
+    "sha256": "00d61b3c9c944be008fd33c943722b36fc8f23436e3ce35d02d61bc2392d66ab"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/index.html",
+    "sha256": "819a66e37bbdabe6290a629034521d59dcfb57e73cd37ee08857f4bdc926e08d"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/README.md",
+    "sha256": "0fba13db3dd22fde4b87c39f778859e656085758c62bcedd72ef4cc979bb0090"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/alertas.css",
+    "sha256": "49ee42d5050f707a7d4af9e240fc88309d41fa2e4bfd033879f0910591a608e0"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/chat.css",
+    "sha256": "65114d7056ee54eb74be68fce13021dfc767a70de7393218b44fe44d952e1786"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/componentes.css",
+    "sha256": "d5616a43da60130d3cfc6f36897153f6298409278893932caf0cf009986bcb80"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/figura.css",
+    "sha256": "6ffcfa162f102c6f9bd2e441659ffc731f48dd704ab326fb1929529ba7544dd5"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/kpi.css",
+    "sha256": "52cbbe49bc17e3b48af6aa8ed240dc576ac336c26a52e29c736ca2a6535cbe43"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/login.css",
+    "sha256": "805e230c79b60e2a6023369c2bfacf98f7ad93bc3d26674049931382d263ef63"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/misc.css",
+    "sha256": "ddec6e7907298a115dfec1df2cc5179c2f74c089045306873d217e313a91d488"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/modal.css",
+    "sha256": "4f88e5fe54c63e398c390093fd4f516a1687e74ce1da376a64ed94d32625e11a"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/shell.css",
+    "sha256": "0ae98fdeb133b9dbef046936cf87d7b2730e7fcde6354d5155da51c554f6783e"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/styles.css",
+    "sha256": "1e196c0a46bcaa2a23cccf5176abba6695538833321b52bc658e4bd87b098115"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/tablas.css",
+    "sha256": "742f9c20aae270190547dbed0ee8af62abd5b3bcee79b90359eefcf34fd41538"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/css/variables.css",
+    "sha256": "ee824c74d235c85572439f65f72bc953ec53ce9d7d81a28af23a3a44509516bd"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/main.js",
+    "sha256": "ec0648f927c53f725d8a9e2aa9ddad765a8cdc196971560261dba9a657f685fa"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/core/dom.js",
+    "sha256": "b51716be231dd3dcc29a5988f68433f01d6ab9580af3340d7c4f12b2f543f5a1"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/core/estado.js",
+    "sha256": "34e6f0711fd32be3af78e4c214ac621f340efad4b24261f8c62c08522f32f946"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/core/eventos.js",
+    "sha256": "adc31dba3fbc648396e0bc30c6797545c4cacdafa6dd8f34900062f10484b4f2"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/core/utilidades.js",
+    "sha256": "3de75385687037bc63ea5b0d4c90e41f2e8098c996c0747f298b7efe0f1a5cfb"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/data/asistente.js",
+    "sha256": "1d04a546e03c4fd616d7ba639e732c11ba8ce115ea5dc55451a219a8be5e17e0"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/data/contenido.js",
+    "sha256": "de65e3a357f02fcd07ada7b2d3cd184cadc41e9930428aa8b2f70276b8295a6f"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/data/indicadores.js",
+    "sha256": "a56bc98e2f07c5cbf91996079143511f862e7899e0e94e8d1ace5e022a454e99"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/data/navegacion.js",
+    "sha256": "bb163e7e5e679bc3b9a8941541d0675d93feded8747db31114baff2921f29358"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/data/sensores.js",
+    "sha256": "0ac9bc43f52a33321067b66e4fe3b069dbf0d50aaa2d4a4ae56e70b595f910d3"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/data/series.js",
+    "sha256": "7de07eb578d80ca04ea295fc442833d8ed3b7817661ba54f992b9c316da79b80"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/data/usuarios.js",
+    "sha256": "845ba3d573bcb8cb7618aa5a6d2548792890ed790edc6068d6b1be886d80279e"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/data/zonas.js",
+    "sha256": "1853140ea0ed523e9716a28ba104bb3dd46500b134d415539d5afb7b4999eae1"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/features/asistente.js",
+    "sha256": "a35b56d26232be6f1b74377b2526271e29fadd0530224a9503399da1cf65df57"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/features/figura.js",
+    "sha256": "d1663e79d59579d34e82db7100d9fdb90a3ec73d595a719dd96bee98971902ec"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/features/graficas.js",
+    "sha256": "937969ef4d29f8a5d85d640ff71f05abc599e9ac8712acb0ebc7fdc49d0d1b2e"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/features/mediciones.js",
+    "sha256": "99b94de0db813277799efa46fd6754e12a9d5004b442947aa33a9ce6f1fe8c2d"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/alertas.js",
+    "sha256": "c5e6d964da79c8689878aa5ce901714cea9dc6eb1d888c41a498b0c0f054e7d4"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/asistente.js",
+    "sha256": "6cdaae33ec4d554a2d0a00012f30543bd66a8e31faaf248794d4bfdf3326b0ef"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/config.js",
+    "sha256": "234d1edae6173a77c415b0a2ceb204778c40ff7ee817d7fe16fef8f6ec3ec9e1"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/cuerpo.js",
+    "sha256": "a5160e4329c5c46eacec04799ce2f85510e41e0a2b497f87f4be4002f614702c"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/graficas.js",
+    "sha256": "08299a8d260d72dae5d00275fe9f129ccc382eafa7bdf41e7e36f139927c5528"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/inicio.js",
+    "sha256": "8e6688bb71ecfb761bc7a18bddc5ab39d0d3308605116a8d516cb6037b3ec923"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/inves.js",
+    "sha256": "c9134a578ef235a74a95d4c390159dcf32b1cbf476ba2735b5ff1b01e213de16"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/medica.js",
+    "sha256": "2f14396e55679a89da308a91b07587ded4ac4f33c8bfb20219fc286f5bc1c760"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/mente.js",
+    "sha256": "4d9f690a43d8a4f1c6376f69daf3f4e166713e6a2c235d13b8f9bdc9bddcb3a9"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/perfiles.js",
+    "sha256": "9d8e910e642bcd2c5a851adb3b1d458c77e59f07efc9fc0c243087a15c6bef5f"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/sensores.js",
+    "sha256": "cd72fc7ca49ba9db6845183eaaca3f484de02fd70599a753838ea80f77af4cb4"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/sueno.js",
+    "sha256": "583c731e81365d81faf9aff43731921837f50106b4696d790f7d495156dd69b1"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/pages/tierra.js",
+    "sha256": "3e81bae121ca9df962784bce7f149047da621ac3e1497ad9fbbde6d7b0fd7e67"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/ui/acciones.js",
+    "sha256": "368c6a716f66bd8c3918059a408c87efe04aa38f7e9f03f96087f3a30f17d187"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/ui/enrutador.js",
+    "sha256": "70d7bffc523cc86b5ae5a1493e7c032609d04968d4389fe4eafbc91af3b91e9a"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/ui/estrellas.js",
+    "sha256": "a30e032a1510aeff19f59fad95c099d89e48c419bf3d57af783615b99f099217"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/ui/modal.js",
+    "sha256": "ed41910172bd0d74bb532700a592c526b63b0cba7c2c52fcaae26cd6b53d9de6"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/ui/registro.js",
+    "sha256": "fd46191bd7b1fce556970d14d53cba03a202c8efb74d55798c9a722f0b5ecb58"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/ui/sesion.js",
+    "sha256": "6ac3217ac2cc8910cf6632c72473496f80cd10d859e82a041126fe0cd1e16aa9"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/ui/shell.js",
+    "sha256": "54c3ce13e95080265fd555f9125bf50d8f6907e1bc37046d4f77ee8290160858"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/ui/toast.js",
+    "sha256": "abd3d5f6605ab7ca849c54c5986ed13c38e2ab8aadbfeb864c63b4d76f1468f9"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/js/ui/vistas.js",
+    "sha256": "d60a97d98060b6b6f2b8db5907910c7f95f03034d474cd7f099aeac3cd922bfe"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/views/lateral.html",
+    "sha256": "7a880cb79feb56490a9da20a637c86fecf2d096c7fffcc8376eb5e08019ae84e"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/views/login.html",
+    "sha256": "78428de10b2d2d52cfb542ce52d48516099de98d6717a0ec4fa633eee66e403e"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/views/modal.html",
+    "sha256": "7c35cfd049aaba10699a862a13c51023f3b980b074dcfaef51e76959435b0f26"
+  },
+  {
+    "path": "SIMISA_modular/SIMISA_entrega/views/superior.html",
+    "sha256": "e314c814581f1f89dcfd8edcf86012334c97c05753899eddb39d6dc228624d4d"
+  }
+]

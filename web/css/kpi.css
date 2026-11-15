@@ -1,0 +1,11 @@
+/* =============================================================
+   SIMISA · Tarjetas de indicadores (KPI)
+   Archivo: css/kpi.css 
+   ============================================================= */
+/* --- kpi --- */
+.kpi{position:relative}
+.kpi .kv{font-size:27px;font-weight:700;letter-spacing:-1px;line-height:1.05;margin:4px 0 2px}
+.kpi .ku{font-size:11px;color:var(--muted);font-weight:500;margin-left:3px}
+.kpi .kt{font-size:10.5px;color:var(--muted2);margin-top:6px}
+.kpi .kicon{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(0,242,255,.08);border:1px solid rgba(0,242,255,.18);color:var(--cyan)}
+.spark{height:34px;margin-top:8px;width:100%}

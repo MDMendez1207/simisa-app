@@ -1,0 +1,13 @@
+{
+  "name": "simisa-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.js",
+    "simulate": "node cli.js",
+    "test": "node --test",
+    "verify:originals": "node scripts/verify-originals.js"
+  }
+}

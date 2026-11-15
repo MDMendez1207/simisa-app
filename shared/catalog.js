@@ -1,0 +1,66 @@
+import {listarIndicadores} from './indicadores-original.js';
+
+export const CATALOG_VERSION = 'entrega-1.1.0';
+// Versiones anteriores que se siguen leyendo (sin migrar ni reescribir sus archivos).
+export const LEGACY_CATALOG_VERSIONS = Object.freeze(['entrega-1.0.0']);
+const periods = {hr: 10, sys: 300, dia: 300, rr: 10, spo2: 10,
+  temp: 60, gluc: 300, bmd: 2419200, sleep: 86400, stress: 86400};
+const precision = {hr: 1, sys: 0, dia: 0, rr: 1, spo2: 1,
+  temp: 1, gluc: 1, bmd: 2, sleep: 1, stress: 1};
+const domains = {hr: [20, 240], sys: [60, 240], dia: [30, 150], rr: [4, 60],
+  spo2: [50, 100], temp: [30, 43], gluc: [30, 400], bmd: [0.2, 2.5],
+  sleep: [0, 24], stress: [0, 10]};
+const sources = {hr: 'pulso', sys: 'presion', dia: 'presion', rr: 'respiracion',
+  spo2: 'oximetria', temp: 'temperatura', gluc: 'glucosa', bmd: 'osea',
+  sleep: 'descanso', stress: 'bienestar'};
+// Signos vitales y registros fisiológicos: solo sensores. Estrés percibido: autoinforme del chequeo psicológico.
+const capture = {stress: 'self_report'};
+
+export const INDICATORS = Object.freeze(listarIndicadores().map(m => Object.freeze({
+  ...m, periodSec: periods[m.clave], decimals: precision[m.clave],
+  domain: Object.freeze(domains[m.clave]), sourceId: sources[m.clave],
+  capture: capture[m.clave] || 'sensor',
+  referenceKind: 'illustrative', origin: 'SIMISA_entrega/js/data/indicadores.js',
+})));
+export const BY_ID = Object.freeze(Object.fromEntries(INDICATORS.map(m => [m.clave, m])));
+export const SENSOR_INDICATORS = Object.freeze(INDICATORS.filter(m => m.capture === 'sensor'));
+/** Se decide con el catálogo vigente para que también aplique a resultados de versiones anteriores. */
+export const isSensorMetric = id => BY_ID[id]?.capture !== 'self_report';
+export const SOURCES = Object.freeze([
+  {id: 'pulso', name: 'Fuente sintética de pulso', kind: 'sensor'},
+  {id: 'presion', name: 'Medición sintética de presión arterial', kind: 'sensor'},
+  {id: 'respiracion', name: 'Fuente sintética respiratoria', kind: 'sensor'},
+  {id: 'oximetria', name: 'Oxímetro simulado', kind: 'sensor'},
+  {id: 'temperatura', name: 'Fuente sintética de temperatura', kind: 'sensor'},
+  {id: 'glucosa', name: 'Fuente sintética de glucosa', kind: 'sensor'},
+  {id: 'osea', name: 'Medición ósea sintética periódica', kind: 'sensor'},
+  {id: 'descanso', name: 'Sensor sintético de sueño', kind: 'sensor'},
+  {id: 'bienestar', name: 'Chequeo psicológico (autoinforme del astronauta)', kind: 'self_report'},
+].map(Object.freeze));
+export const REGIONS = Object.freeze([
+  {id: 'cuerpo', name: 'Cuerpo completo', image: 'cuerpo-holografico-v2.png',
+    metrics: ['temp', 'hr', 'spo2'], note: 'Resumen de los indicadores disponibles.'},
+  {id: 'pecho', name: 'Pecho y corazón', image: 'corazon-oblicuo.png',
+    metrics: ['hr', 'sys', 'dia'], note: 'La presión conserva sistólica y diastólica en mmHg, adquiridas juntas.'},
+  {id: 'pulmones', name: 'Pulmones', image: 'pulmones-oblicuos.png',
+    metrics: ['rr', 'spo2'], note: 'Agrupa respiración y oxigenación. Una lectura no localiza una lesión pulmonar.'},
+  {id: 'abdomen', name: 'Abdomen', image: 'abdomen-oblicuo.png',
+    metrics: ['gluc'], note: 'Acceso al grupo metabólico. La glucosa no describe el estado del estómago.'},
+  {id: 'huesos', name: 'Huesos y articulaciones', image: 'piernas-oblicuas.png',
+    metrics: ['bmd'], note: 'Densidad ósea sintética en g/cm², según SIMISA_entrega. No se convierte desde QUS ni se actualiza como un signo vital.'},
+  {id: 'cabeza', name: 'Cabeza y cerebro', image: 'cabeza-lateral.png',
+    metrics: ['sleep', 'stress'], note: 'Acceso a sueño y bienestar. Estos registros no miden actividad cerebral ni cognición.'},
+].map(r => Object.freeze({...r, metrics: Object.freeze(r.metrics)})));
+export const SCENARIOS = Object.freeze([
+  {id: 'nominal', name: 'Referencia estable', description: 'Variación suave de indicadores relacionados.'},
+  {id: 'respiratorio', name: 'Episodio respiratorio', description: 'Descenso preparado de SpO₂ con cambios relacionados de pulso y respiración.'},
+  {id: 'desconexion', name: 'Desconexión del oxímetro', description: 'Interrupción y recuperación con nuevas observaciones; el historial se conserva.'},
+  {id: 'calidad', name: 'Señal inválida', description: 'Lecturas inválidas para comprobar exclusión y estado técnico.'},
+  {id: 'recorrido', name: 'Recorrido completo', description: 'Episodio respiratorio, desconexión y señal de baja calidad.'},
+].map(Object.freeze));
+
+export function condition(metric, value) {
+  if (value == null || !Number.isFinite(value)) return 'unknown';
+  return value < metric.lo || value > metric.hi ? 'outside' : 'inside';
+}
+export const CONDITION_LABEL = {inside: 'Dentro de referencia demo', outside: 'Fuera de referencia demo', unknown: 'Sin condición evaluable'};
