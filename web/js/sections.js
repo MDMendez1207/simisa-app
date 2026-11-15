@@ -6,12 +6,10 @@ import {summarize} from '../../shared/results.js';
 import {deviceStatus, LOW_BATTERY} from '../../shared/devices.js';
 import {HAZARDS, RISKS, INDICATOR_GUIDE, GUIDE_DISCLAIMER} from '../../shared/health-guide.js';
 
-const historyTable = rows => `<div class="table-scroll"><table><thead><tr><th>Adquisición UTC</th><th>Valor</th><th>Unidad</th><th>Calidad</th><th>Disponibilidad</th></tr></thead><tbody id="historyRows">${rows}</tbody></table></div>`;
-
 export function sleepPage(c) {
   return c.heading('Sueño y descanso', 'Duración del descanso informada por el sensor de sueño.') + c.timeline() +
     `<div class="two-columns sleep-layout"><div id="readings" data-metrics="sleep">${c.readingCard('sleep')}</div>
-    <div class="card" id="chartBlock">${c.chartBlock()}</div></div><div class="card section-gap"><h2>Historial de descanso</h2>${historyTable(c.tableRows())}</div>`;
+    <div class="card" id="chartBlock">${c.chartBlock()}</div></div><div class="card section-gap"><h2>Historial de descanso</h2><div id="historyBlock">${c.historyTable()}</div></div>`;
 }
 
 export function wellbeingPage(c) {

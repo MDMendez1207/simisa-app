@@ -4,6 +4,7 @@ import {ICONOS} from './data/navegacion-original.js';
 import {escapar as esc} from './core/utilidades.js';
 import {formatDuration, formatTimestamp, timeMarkup} from './core/formatos.js';
 import {chart} from './chart.js';
+import {recordsTable} from './records.js';
 import {crewOf, memberView, activitySubject, hasCrewAccess} from '/shared/crew.js';
 import {DEVICES, deviceStatus, DEVICE_STATE, LOW_BATTERY} from '/shared/devices.js';
 import {INDICATOR_GUIDE, HAZARDS, RISKS, REGION_FUNCTION, GUIDANCE_LEVEL, GUIDE_DISCLAIMER, guidance} from '/shared/health-guide.js';
@@ -15,7 +16,7 @@ import {workflowPanel, communication, profiles} from './workflows.js';
 // envelope.result: vista del tripulante consultado (subjectId). allActivity: actividad visible para la sesión.
 const state = {view: 'inicio', settingsTab: 'general', chat: [], activity: [], allActivity: [], eventFilter: 'all', meta: null, runs: [], warnings: [], envelope: null,
   full: null, raw: null, me: null, crew: [], roles: {}, subjectId: null, researchMetric: 'all',
-  chartWindows: {daily: 'all', vital: '86400'}, index: {}, region: 'cuerpo', metric: 'hr', elapsed: 0, playing: false, speed: 60,
+  chartWindows: {daily: 'all', vital: '86400'}, historyPage: 0, index: {}, region: 'cuerpo', metric: 'hr', elapsed: 0, playing: false, speed: 60,
   mode: 'detail', zoom: 1, panX: 0, panY: 0, busy: false};
 const crewAccess = () => hasCrewAccess(state.me);
 const roleName = () => state.roles[state.me?.role]?.name || '';
@@ -87,6 +88,7 @@ async function loadRun(id, goTo = state.view) {
 /** Vista del tripulante consultado: resultado, actividad, índice y conversación. */
 function applyView() {
   if (!state.full) return;
+  state.historyPage = 0;
   state.envelope = {...state.raw, result: memberView(state.full, state.subjectId)};
   state.activity = state.allActivity.filter(e => activitySubject(e, state.full) === state.subjectId);
   state.index = buildIndex(result(), state.activity);
@@ -132,6 +134,7 @@ function updatePlayButton() {
   }
 }
 function setTime(value) {
+  state.historyPage = 0;
   state.elapsed = Math.max(startSec(), Math.min(total(), Number(value)));
   preciseTime = state.elapsed; lastPlayback = performance.now(); updateLive();
 }
@@ -155,6 +158,7 @@ function zoomBy(factor) {
   transformAnatomy();
 }
 function navigate(view) {
+  state.historyPage = 0;
   if (view === 'simulaciones') { view = 'config'; state.settingsTab = 'simulation'; }
   state.view = NAV.some(n => n[0] === view) && allowedView(view) ? view : 'inicio';
   if (state.view === 'config' && !crewAccess()) state.settingsTab = 'general';
@@ -200,10 +204,12 @@ function readingCard(id) {
 }
 /** Período de la gráfica: se recuerda por separado para indicadores diarios y continuos. */
 const windowKey = m => m.periodSec >= 86400 ? 'daily' : 'vital';
+const chartFromSec = m => state.chartWindows[windowKey(m)] === 'all' ? startSec()
+  : Math.max(startSec(), state.elapsed - Number(state.chartWindows[windowKey(m)]));
 function chartBlock() {
   const m = metric(), rows = state.index[m.clave];
   const choice = state.chartWindows[windowKey(m)];
-  const fromSec = choice === 'all' ? startSec() : Math.max(startSec(), state.elapsed - Number(choice));
+  const fromSec = chartFromSec(m);
   const stats = summarize(result(), state.index, m.clave, state.elapsed, fromSec);
   const windows = startSec() < 0 || total() > 3600 ? `<label class="inline-select">Período<select id="chartWindow">${CHART_WINDOWS.map(([v, l]) => `<option value="${v}" ${v === choice ? 'selected' : ''}>${l}</option>`).join('')}</select></label>` : '';
   return `<div class="chart-head"><div><h3>${esc(m.nombre)}</h3><small class="hint">${esc(referenceText(m))}</small></div>${windows}</div>
@@ -234,10 +240,11 @@ function eventRows(limit = 40, all = false) {
     <p>${esc(metric(e.indicator).nombre)} · ${esc(eventLabel(e))}</p><small>${timeMarkup(e.timestamp)}</small></div>
     <div class="row"><button class="btn ghost" data-action="event" data-time="${e.elapsedSec}" data-metric="${e.indicator}">Explorar momento</button>${state.activity.some(a=>a.type==='acknowledge'&&a.payload.eventId===e.id)?'<span class="tag info">Revisada</span>':`<button class="btn" data-action="ack" data-id="${esc(e.id)}">Marcar revisada</button>`}</div></div>`).join('') : '<p class="empty">Sin eventos registrados hasta la hora de misión.</p>';
 }
-function tableRows() {
-  const rows = (state.index[state.metric] || []).filter(r => r.elapsedSec <= state.elapsed).slice(-100).reverse();
-  const m = metric();
-  return rows.map(r => `<tr><td class="time-cell">${timeMarkup(r.timestamp, {seconds: true, year: r.timestamp.slice(0,4) !== missionInstant(state.elapsed).slice(0,4)})}</td><td>${display(r.value, m)}</td><td>${esc(r.unit)}</td><td>${r.captureMethod === 'self_report' ? (r.synthetic ? 'Historial sintético' : 'Autoinforme') : QUALITY[r.quality]}</td><td>${r.captureMethod === 'self_report' ? 'Chequeo psicológico' : AVAILABILITY[r.availability]}</td></tr>`).join('') || '<tr><td colspan="5">Sin registros.</td></tr>';
+function historyTable() {
+  const table = recordsTable({rows: state.index[state.metric] || [], metric: metric(),
+    elapsedSec: state.elapsed, fromSec: chartFromSec(metric()), page: state.historyPage, referenceTime: missionInstant(state.elapsed)});
+  state.historyPage = table.page;
+  return table.html;
 }
 function simulationsPage() {
   const d = state.meta.defaults;
@@ -280,7 +287,7 @@ function overviewPage() {
 }
 function historyPage() {
   return heading('Gráficas e historial', 'Consultá la evolución y el detalle de tus mediciones.') + metricSelector() + timeline() +
-    `<div class="stack"><div class="card" id="chartBlock">${chartBlock()}</div><div class="card guide-card" id="guideBlock">${guideBlock()}</div><div class="card"><div class="row between"><h2>Últimos registros</h2><a class="btn ghost" href="/api/runs/${result().id}/file">Descargar historial</a></div><div class="table-scroll"><table><thead><tr><th>Adquisición UTC</th><th>Valor</th><th>Unidad</th><th>Calidad</th><th>Disponibilidad</th></tr></thead><tbody id="historyRows">${tableRows()}</tbody></table></div></div></div>`;
+    `<div class="stack"><div class="card" id="chartBlock">${chartBlock()}</div><div class="card guide-card" id="guideBlock">${guideBlock()}</div><div class="card"><div class="row between"><h2>Últimos registros</h2><a class="btn ghost" href="/api/runs/${result().id}/file">Descargar historial</a></div><div id="historyBlock">${historyTable()}</div></div></div>`;
 }
 /** "hace 4 s", "hace 2 h 14 min", "hace 3 días": antigüedad respecto de la hora de misión. */
 function ago(sec) {
@@ -326,7 +333,7 @@ function pageContext() {
   return {result: result(), index: state.index, elapsed: state.elapsed, chat: state.chat, activity: state.activity,
     me: state.me, subject: result()?.subject, roleName: roleName(), crewAccess: crewAccess(), roles: state.roles,
     crew: state.full ? crewOf(state.full) : [state.me], crewViews, researchMetric: state.researchMetric, observationAt, isSensorMetric, time,
-    indicators: result()?.indicators || INDICATORS, heading, timeline, readingCard, chartBlock, tableRows};
+    indicators: result()?.indicators || INDICATORS, heading, timeline, readingCard, chartBlock, historyTable};
 }
 function settingsPage() {
   const tabs = crewAccess() ? `<div class="settings-tabs" role="group" aria-label="Secciones de configuración"><button class="chip ${state.settingsTab === 'general' ? 'on' : ''}" data-action="settingsTab" data-tab="general" aria-pressed="${state.settingsTab === 'general'}">Preferencias</button><button class="chip ${state.settingsTab === 'simulation' ? 'on' : ''}" data-action="settingsTab" data-tab="simulation" aria-pressed="${state.settingsTab === 'simulation'}">Simulación</button></div>` : '';
@@ -375,7 +382,14 @@ function updateLive() {
   }
   if ($('#chartBlock')) $('#chartBlock').innerHTML = chartBlock();
   if ($('#guideBlock')) { const open = $('#guideBlock details')?.open; $('#guideBlock').innerHTML = guideBlock(); if (open) $('#guideBlock details').open = true; }
-  if ($('#historyRows')) $('#historyRows').innerHTML = tableRows();
+  if ($('#historyBlock')) {
+    const focus = $('#historyBlock').contains(document.activeElement) ? document.activeElement.id : null;
+    $('#historyBlock').innerHTML = historyTable();
+    if (focus) {
+      const control = document.getElementById(focus);
+      (control && !control.disabled ? control : $('#historyPageNumber'))?.focus({preventScroll: true});
+    }
+  }
   if ($('#eventList')) $('#eventList').innerHTML = eventRows(state.view === 'inicio' ? 3 : 80);
   if ($('#sensorPanel')) $('#sensorPanel').innerHTML = sensorPanel();
   if ($('#researchRows')) $('#researchRows').innerHTML = researchRows(pageContext());
@@ -383,6 +397,7 @@ function updateLive() {
 }
 function selectMetric(id) {
   if (!metric(id)) return;
+  state.historyPage = 0;
   state.metric = id;
   if (state.view === 'cuerpo' && !REGIONS.find(r => r.id === state.region).metrics.includes(id)) {
     state.region = REGIONS.find(r => r.id !== 'cuerpo' && r.metrics.includes(id))?.id || 'cuerpo';
@@ -488,6 +503,7 @@ document.addEventListener('click', async e => {
       }
       case 'ack': await record('acknowledge',{eventId:button.dataset.id}); render(); break;
       case 'sensorHistory': selectMetric(button.dataset.metric); navigate('graficas'); break;
+      case 'historyPage': pause(); state.historyPage = Number(button.dataset.page); updateLive(); break;
       case 'exportResearch': {
         const blob = new Blob([researchCrewCSV(crewViews(), state.elapsed)], {type: 'text/csv;charset=utf-8'});
         const url = URL.createObjectURL(blob), anchor = document.createElement('a');
@@ -531,7 +547,8 @@ document.addEventListener('change', async e => {
   try {
     if(e.target.id==='eventFilter'){state.eventFilter=e.target.value;updateLive();}
     if (e.target.id === 'subjectSelector') selectSubject(e.target.value);
-    if (e.target.id === 'chartWindow') { state.chartWindows[windowKey(metric())] = e.target.value; updateLive(); }
+    if (e.target.id === 'chartWindow') { state.chartWindows[windowKey(metric())] = e.target.value; state.historyPage = 0; updateLive(); }
+    if (e.target.id === 'historyPageNumber') { pause(); state.historyPage = Number(e.target.value) - 1; updateLive(); }
     if (e.target.id === 'researchMetric') { state.researchMetric = e.target.value; updateLive(); }
     if (e.target.id === 'runSelector') await loadRun(e.target.value);
     if (e.target.id === 'metricSelector') selectMetric(e.target.value);
