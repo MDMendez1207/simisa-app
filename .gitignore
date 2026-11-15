@@ -2,6 +2,8 @@ data/runs/.*.tmp
 data/runs/*.tmp
 test-output/
 node_modules/
+public/
+.vercel/
 
 # Ejecuciones de versiones anteriores del motor: se conservan solo en disco.
 data/legacy-*/

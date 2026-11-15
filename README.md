@@ -14,7 +14,19 @@ node server.js
 
 El servicio escucha exclusivamente en `127.0.0.1`. El puerto por defecto es 4180. Se puede cambiar mediante la variable `PORT`.
 
-## Enlace público (túnel)
+## Deploy en Vercel (web de muestra)
+
+El repositorio incluye `vercel.json` y no requiere base de datos, cuentas de almacenamiento ni variables de entorno. En **New Project**, importar `MDMendez1207/simisa-app`, usar **Other**, rama **master**, raíz **./**, comando **npm run build:vercel** y salida **public**. Los dos últimos valores ya están definidos en `vercel.json`; mantener los valores del repositorio.
+
+El build copia la interfaz, los módulos compartidos y los dos historiales sintéticos incluidos a `public/`. Ninguna actividad local se publica. Los historiales se sirven como archivos estáticos; `api/simulate.js` ejecuta nuevas simulaciones sin escribir en disco y transmite sus resultados por partes para soportar historiales grandes.
+
+En la web publicada, nuevas ejecuciones, chequeos, conversaciones, revisiones e informes se mantienen **solo en la memoria de cada pestaña**. Recargar, cerrar o cambiar la sesión reinicia estas interacciones; los historiales incluidos siempre vuelven a estar disponibles. Se pueden descargar resultados e informes antes de recargar. La identidad de muestra se recuerda en `sessionStorage` para permitir el ingreso. Los perfiles organizan la interfaz; no hay autenticación real ni confidencialidad para los datos ficticios publicados.
+
+La aplicación local (`npm start`) y el simulador independiente conservan su almacenamiento en archivos. El build no modifica `web/`, `shared/` ni `data/runs/`; `public/` es una salida generada e ignorada por Git.
+
+Referencias: [configuración de Vercel](https://vercel.com/docs/project-configuration/vercel-json), [funciones Node.js](https://vercel.com/docs/functions/runtimes/node-js) y [límites y transmisión de respuestas](https://vercel.com/docs/functions/limitations).
+
+## Enlace público local (túnel)
 
 Para mostrar la demo desde otro equipo sin desplegar un servidor:
 

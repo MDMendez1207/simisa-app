@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "simulate": "node cli.js",
+    "build:vercel": "node scripts/build-vercel.js",
     "test": "node --test",
     "verify:originals": "node scripts/verify-originals.js"
   }

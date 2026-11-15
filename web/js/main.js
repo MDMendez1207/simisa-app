@@ -5,6 +5,7 @@ import {escapar as esc} from './core/utilidades.js';
 import {formatDuration, formatTimestamp, timeMarkup} from './core/formatos.js';
 import {chart} from './chart.js';
 import {recordsTable} from './records.js';
+import {isShowcase, showcaseFetch} from './showcase.js';
 import {crewOf, memberView, activitySubject, hasCrewAccess} from '/shared/crew.js';
 import {DEVICES, deviceStatus, DEVICE_STATE, LOW_BATTERY} from '/shared/devices.js';
 import {INDICATOR_GUIDE, HAZARDS, RISKS, REGION_FUNCTION, GUIDANCE_LEVEL, GUIDE_DISCLAIMER, guidance} from '/shared/health-guide.js';
@@ -48,8 +49,8 @@ const observation = id => observationAt(result(), state.index, id, state.elapsed
 
 async function api(route, options) {
   let response;
-  try { response = await fetch(route, options); }
-  catch { throw new Error('No se pudo conectar con el almacenamiento local. Comprobá que SIMISA siga abierto e intentá nuevamente.'); }
+  try { response = await (isShowcase ? showcaseFetch(route, options) : fetch(route, options)); }
+  catch { throw new Error(isShowcase ? 'No se pudo conectar con el servicio de simulación. Intentá nuevamente.' : 'No se pudo conectar con el almacenamiento local. Comprobá que SIMISA siga abierto e intentá nuevamente.'); }
   if (response.status === 401) { renderLogin(); throw new Error('Identificate como tripulante para continuar.'); }
   let data;
   try { data = await response.json(); }
@@ -248,8 +249,8 @@ function historyTable() {
 }
 function simulationsPage() {
   const d = state.meta.defaults;
-  return `<div class="row between section-toolbar"><h2>Simulación</h2><button class="btn ghost" data-action="refresh">Actualizar archivos</button></div>` +
-    `<div class="two-columns"><form id="simulationForm" class="card"><h2>Nueva simulación</h2><p class="csub">Una semilla y configuración idénticas producen el mismo resultado. El guardado se verifica antes de abrirlo.</p>
+  return `<div class="row between section-toolbar"><h2>Simulación</h2><button class="btn ghost" data-action="refresh">${isShowcase ? 'Actualizar lista' : 'Actualizar archivos'}</button></div>` +
+    `<div class="two-columns"><form id="simulationForm" class="card"><h2>Nueva simulación</h2><p class="csub">Una semilla y configuración idénticas producen el mismo resultado. ${isShowcase ? 'Los resultados nuevos permanecen en esta pestaña hasta recargarla.' : 'El guardado se verifica antes de abrirlo.'}</p>
     <div class="form-grid"><label class="span-two">Nombre de la ejecución<input name="name" value="${esc(d.name)}" maxlength="80" required></label>
     <label class="span-two">Escenario<select name="scenario">${state.meta.scenarios.map(s => `<option value="${s.id}" ${s.id === d.scenario ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label>
     <p class="hint span-two" id="scenarioDescription">${esc(state.meta.scenarios.find(s => s.id === d.scenario).description)}</p>
@@ -258,8 +259,8 @@ function simulationsPage() {
     <label>Historial previo (días)<input type="number" name="historyDays" min="0" max="30" step="1" value="${d.historyDays || 14}" required></label>
     <label>Paso del reloj<select name="stepSec">${[5, 10, 30, 60].map(n => `<option value="${n}" ${n === d.stepSec ? 'selected' : ''}>${formatDuration(n)}</option>`).join('')}</select></label>
     <label>Inicio (UTC)<input name="startTime" type="datetime-local" step="1" value="${d.startTime.slice(0, 19)}" required></label></div>
-    <div class="form-footer"><button type="submit" class="btn primary" ${state.busy ? 'disabled' : ''}>${state.busy ? 'Calculando y guardando…' : 'Ejecutar y guardar'}</button><p class="hint">Las fuentes mantienen sus frecuencias propias. Hueso y sueño no se convierten en señales continuas. El estrés percibido no se simula: proviene del chequeo psicológico.</p></div></form>
-    <div class="card"><div class="row between"><h2>Resultados guardados</h2><span class="tag cyan">${state.runs.length} archivos</span></div><p class="hint">Se leen desde disco. También aparecen las ejecuciones creadas con el simulador independiente.</p>
+    <div class="form-footer"><button type="submit" class="btn primary" ${state.busy ? 'disabled' : ''}>${state.busy ? 'Calculando…' : isShowcase ? 'Ejecutar simulación' : 'Ejecutar y guardar'}</button><p class="hint">Las fuentes mantienen sus frecuencias propias. Hueso y sueño no se convierten en señales continuas. El estrés percibido no se simula: proviene del chequeo psicológico.</p></div></form>
+    <div class="card"><div class="row between"><h2>${isShowcase ? 'Resultados disponibles' : 'Resultados guardados'}</h2><span class="tag cyan">${state.runs.length} archivos</span></div><p class="hint">${isShowcase ? 'Historiales incluidos y simulaciones creadas en esta pestaña.' : 'Se leen desde disco. También aparecen las ejecuciones creadas con el simulador independiente.'}</p>
     <div class="run-list">${state.runs.length ? state.runs.map(r => `<article class="run-item ${result()?.id === r.id ? 'selected' : ''}"><h3>${esc(r.config.name)}</h3><div class="run-meta">${esc(state.meta.scenarios.find(s => s.id === r.config.scenario)?.name || r.config.scenario)} · Semilla ${r.config.seed}<br>${r.config.durationMinutes} min · ${r.count.toLocaleString('es-AR')} registros · ${r.eventCount} eventos<br><span class="mono">${r.id}</span></div><div class="row"><button class="btn" data-action="open" data-id="${r.id}">Explorar anatomía</button><a class="btn ghost" href="/api/runs/${r.id}/file">Descargar JSON</a></div></article>`).join('') : '<p class="empty">Todavía no hay simulaciones. Creá la primera con el formulario.</p>'}</div></div></div>`;
 }
 function anatomyPage() {
@@ -332,15 +333,15 @@ function eventsPage() {
 }
 function pageContext() {
   return {result: result(), index: state.index, elapsed: state.elapsed, chat: state.chat, activity: state.activity,
-    me: state.me, subject: result()?.subject, roleName: roleName(), crewAccess: crewAccess(), roles: state.roles,
+    me: state.me, subject: result()?.subject, roleName: roleName(), crewAccess: crewAccess(), roles: state.roles, showcase: isShowcase,
     crew: state.full ? crewOf(state.full) : [state.me], crewViews, researchMetric: state.researchMetric, observationAt, isSensorMetric, time,
     indicators: result()?.indicators || INDICATORS, heading, timeline, readingCard, chartBlock, historyTable};
 }
 function settingsPage() {
   const tabs = crewAccess() ? `<div class="settings-tabs" role="group" aria-label="Secciones de configuración"><button class="chip ${state.settingsTab === 'general' ? 'on' : ''}" data-action="settingsTab" data-tab="general" aria-pressed="${state.settingsTab === 'general'}">Preferencias</button><button class="chip ${state.settingsTab === 'simulation' ? 'on' : ''}" data-action="settingsTab" data-tab="simulation" aria-pressed="${state.settingsTab === 'simulation'}">Simulación</button></div>` : '';
-  const general = `<div class="stack"><div class="card"><h2>Accesibilidad</h2><label class="row"><input type="checkbox" id="reduceMotion" ${document.documentElement.dataset.reduced === 'true' ? 'checked' : ''}> Reducir movimiento</label><p class="hint">Se respeta también la preferencia del sistema.</p></div><div class="card"><h2>Historial</h2><p>Los registros se conservan al cerrar y volver a abrir la aplicación.</p>${result() ? `<a class="btn section-gap" href="/api/runs/${result().id}/file">Descargar historial</a>` : '<p class="hint">No hay un historial seleccionado.</p>'}</div></div>`;
+  const general = `<div class="stack"><div class="card"><h2>Accesibilidad</h2><label class="row"><input type="checkbox" id="reduceMotion" ${document.documentElement.dataset.reduced === 'true' ? 'checked' : ''}> Reducir movimiento</label><p class="hint">Se respeta también la preferencia del sistema.</p></div><div class="card"><h2>Historial</h2><p>${isShowcase ? 'Los historiales incluidos están siempre disponibles. Las simulaciones y acciones nuevas se reinician al recargar esta pestaña; podés descargarlas antes.' : 'Los registros se conservan al cerrar y volver a abrir la aplicación.'}</p>${result() ? `<a class="btn section-gap" href="/api/runs/${result().id}/file">Descargar historial</a>` : '<p class="hint">No hay un historial seleccionado.</p>'}</div></div>`;
   const simulation = state.settingsTab === 'simulation' ? simulationsPage() + (result() ? timeline({controls: true}) : '') +
-    `<details class="card sources section-gap"><summary>Acerca de los datos y recursos</summary><div class="stack section-gap"><p>Los valores y las relaciones entre indicadores son sintéticos. Los escenarios y las referencias numéricas permiten probar la aplicación; no tienen validación fisiológica o clínica. Las imágenes son ilustraciones 2D generadas con IA y pendientes de revisión anatómica profesional.</p><p>Las unidades y escalas siguen a SIMISA_entrega: presión sistólica y diastólica en mmHg, densidad ósea en g/cm², sueño en horas y estrés de 0 a 10.</p><p>Los signos vitales y el sueño provienen exclusivamente de sensores; la aplicación no admite cargarlos a mano. El estado de ánimo y el estrés percibido se registran en el chequeo psicológico, que completa el astronauta.</p><p>La interfaz recupera los resultados desde archivos. El simulador independiente puede ejecutarse sin abrir la web. El navegador recuerda solamente la selección y las preferencias.</p><p>El asistente responde mediante consultas locales guiadas. No utiliza un modelo de IA externo. La conexión con equipos, las cuentas con permisos y el enlace con Tierra requieren una integración adicional.</p><p><a href="/assets/PROCEDENCIA.md" target="_blank">Procedencia de las ilustraciones</a> · <a href="/assets/PROMPTS.json" target="_blank">Prompts originales</a></p>
+    `<details class="card sources section-gap"><summary>Acerca de los datos y recursos</summary><div class="stack section-gap"><p>Los valores y las relaciones entre indicadores son sintéticos. Los escenarios y las referencias numéricas permiten probar la aplicación; no tienen validación fisiológica o clínica. Las imágenes son ilustraciones 2D generadas con IA y pendientes de revisión anatómica profesional.</p><p>Las unidades y escalas siguen a SIMISA_entrega: presión sistólica y diastólica en mmHg, densidad ósea en g/cm², sueño en horas y estrés de 0 a 10.</p><p>Los signos vitales y el sueño provienen exclusivamente de sensores; la aplicación no admite cargarlos a mano. El estado de ánimo y el estrés percibido se registran en el chequeo psicológico, que completa el astronauta.</p><p>${isShowcase ? 'Esta web de muestra incluye historiales ficticios. Las nuevas simulaciones, chequeos e informes se mantienen solo en la memoria de la pestaña y se reinician al recargar. No hay autenticación real ni almacenamiento remoto.' : 'La interfaz recupera los resultados desde archivos. El simulador independiente puede ejecutarse sin abrir la web. El navegador recuerda solamente la selección y las preferencias.'}</p><p>El asistente responde mediante consultas locales guiadas. No utiliza un modelo de IA externo. La conexión con equipos, las cuentas con permisos y el enlace con Tierra requieren una integración adicional.</p><p><a href="/assets/PROCEDENCIA.md" target="_blank">Procedencia de las ilustraciones</a> · <a href="/assets/PROMPTS.json" target="_blank">Prompts originales</a></p>
     <p>El dosímetro personal registra tasa de dosis en µSv/h y se agrupa en Abdomen como categoría de navegación. Las nuevas simulaciones usan como escala de exposición el perfil ISS/LEO: 0,4–1,1 mSv/día, equivalente a medias de 16,67–45,83 µSv/h. La variación por semilla, día y tripulante es sintética, sin predicción orbital ni de exposición lunar. No se calcula dosis acumulada ni riesgo individual. Los 100 mSv son contexto epidemiológico de dosis, no un umbral anual automático. Las fuentes y su alcance se explican en Información médica.</p>
     ${result() ? `<div><h3>Resultado seleccionado</h3><p class="mono identity">${esc(result().id)}<br>${esc(result().engineVersion)} · ${esc(result().catalogVersion)}<br>SHA-256: ${state.envelope.checksum}</p><pre class="run-meta">${esc(JSON.stringify(result().config, null, 2))}</pre></div>` : ''}</div></details>` : '';
   return heading('Configuración', 'Preferencias y administración de datos.') + tabs + (state.settingsTab === 'simulation' ? simulation : general);
@@ -478,6 +479,13 @@ async function ask(question) {
 }
 
 document.addEventListener('click', async e => {
+  const fileLink = isShowcase && e.target.closest('a[href^="/api/runs/"][href$="/file"]');
+  if (fileLink) {
+    e.preventDefault();
+    try { downloadJSON(await api(new URL(fileLink.href).pathname), 'simisa-historial.json'); }
+    catch (error) { feedback(error); }
+    return;
+  }
   const button = e.target.closest('[data-action]');
   if (!button) return;
   e.preventDefault();
@@ -516,7 +524,7 @@ document.addEventListener('click', async e => {
         await refreshRuns();
         if (id && state.runs.some(r => r.id === id)) await loadRun(id);
         else { pause(); state.envelope = null; state.index = {}; render(); }
-        notice('Listado recuperado desde los archivos locales.'); break;
+        notice(isShowcase ? 'Lista de resultados actualizada.' : 'Listado recuperado desde los archivos locales.'); break;
       }
       case 'play': togglePlay(); break;
       case 'begin': pause(); setTime(0); break;
@@ -579,11 +587,11 @@ document.addEventListener('submit', async e => {
   for (const key of ['seed', 'durationMinutes', 'stepSec', 'historyDays']) data[key] = Number(data[key]);
   data.startTime = `${data.startTime.length === 16 ? data.startTime + ':00' : data.startTime}Z`;
   state.busy = true;
-  const submit = form.querySelector('[type=submit]'); submit.disabled = true; submit.textContent = 'Calculando y guardando…';
+  const submit = form.querySelector('[type=submit]'); submit.disabled = true; submit.textContent = isShowcase ? 'Calculando…' : 'Calculando y guardando…';
   try {
     const created = await api('/api/runs', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
     await refreshRuns(); await loadRun(created.id, 'cuerpo');
-    notice(created.reused ? 'La ejecución idéntica ya estaba guardada. Se recuperó su archivo.' : 'Simulación ejecutada, guardada y leída desde disco.');
+    notice(isShowcase ? (created.reused ? 'Resultado idéntico recuperado.' : 'Simulación lista para explorar en esta pestaña.') : created.reused ? 'La ejecución idéntica ya estaba guardada. Se recuperó su archivo.' : 'Simulación ejecutada, guardada y leída desde disco.');
   } catch (error) { feedback(error); }
   finally { state.busy = false; if (submit.isConnected) { submit.disabled = false; submit.textContent = 'Ejecutar y guardar'; } }
 });
@@ -671,5 +679,5 @@ async function boot() {
   else navigate(crewAccess() ? (view || 'simulaciones') : 'inicio');
 }
 boot().catch(error => {
-  $('#app').innerHTML = `<div class="card error-full"><h1>No se pudo abrir SIMISA</h1><p class="error" role="alert">${esc(error.message)}</p><p class="hint">Las ejecuciones guardadas permanecen en sus archivos. Comprobá que la aplicación local esté iniciada y volvé a cargar esta página.</p><a class="btn" href="/">Reintentar</a></div>`;
+  $('#app').innerHTML = `<div class="card error-full"><h1>No se pudo abrir SIMISA</h1><p class="error" role="alert">${esc(error.message)}</p><p class="hint">${isShowcase ? 'Los historiales incluidos siguen disponibles. Volvé a cargar esta página para reintentarlo.' : 'Las ejecuciones guardadas permanecen en sus archivos. Comprobá que la aplicación local esté iniciada y volvé a cargar esta página.'}</p><a class="btn" href="/">Reintentar</a></div>`;
 });
