@@ -4,10 +4,10 @@ Fecha: 14 de noviembre de 2026. Entorno: Windows, Node.js 22.22.1 y navegador in
 
 > **Estado vigente (tripulación, 14/11/2026).** Este documento es un registro fechado: las secciones siguientes describen lo observado en cada revisión. Estado actual:
 >
-> - Motor `synthetic-2.1.0`, esquema 2 (tripulación de cuatro, historial previo opcional), catálogo `entrega-1.1.0`. `node --test`: **18 pruebas, 0 fallos**.
-> - Ejemplos en `data/runs/`: `73f50a29bda9900206fb9ccc` (Recorrido inicial, semilla 2026) y `e4dff56e3ebf522e1b6b1c8c` (Recorrido web verificado, semilla 31415), con 14 días de historial y 23 612 observaciones cada uno; los eventos corresponden solo a Kenji Mori.
-> - Ejemplos anteriores archivados fuera del listado: `1.0.0` en `data/legacy-1.0.0/`, `1.1.0` en `data/legacy-1.1.0/` y `2.0.0` (`f45533…`, `c64bc8…`) en `data/legacy-2.0.0/`.
-> - La pantalla de ingreso, el Centro de tripulación y el selector de tripulante no se revisaron todavía en navegador. Las observaciones de navegador más abajo corresponden a la versión de un solo sujeto (Ana Torres).
+> - Motor `synthetic-2.3.0`, esquema 2 (tripulación de cuatro, historial previo, dosímetro con perfil ISS/LEO), catálogo `entrega-1.3.0`. `node --test`: **20 pruebas, 0 fallos**.
+> - Ejemplos en `data/runs/`: `23f79084b444cbc2993cfdd1` (Recorrido inicial, semilla 2026) y `5891b709a93c234018923c6a` (Recorrido web verificado, semilla 31415), con 14 días de historial y 26 544 observaciones cada uno; los eventos corresponden solo a Kenji Mori. La dosis del último día de historial, integrada a partir de las tasas guardadas, es de 0,84–0,86 y 1,01–1,02 mSv/día, dentro del perfil 0,4–1,1 mSv/día.
+> - Ejemplos anteriores archivados fuera del listado (no se publican en el repositorio): `data/legacy-1.0.0/`, `data/legacy-1.1.0/`, `data/legacy-2.0.0/`, `data/legacy-2.1.0-previo/`, `data/legacy-2.1.0/` y `data/legacy-2.2.0/`.
+> - Pantalla de ingreso, Centro de tripulación, reloj de misión, Estado de sensores y guía de salud revisados con capturas en Chrome sin interfaz, sin errores de consola. Las observaciones de navegador más abajo corresponden a la versión de un solo sujeto (Ana Torres).
 > - El informe exportado y su conteo incluyen solo mediciones de sensores; el estrés llega por los chequeos registrados.
 > - Envíos simultáneos de un mismo informe registran uno solo; un archivo de actividad dañado se omite sin bloquear el resto.
 > - Acceso por túnel probado de forma automática (hosts admitidos, origen y modo solo lectura). No se probó todavía con `cloudflared` real ni en navegador.
