@@ -1,8 +1,21 @@
 import {listarIndicadores} from './indicadores-original.js';
 
-export const CATALOG_VERSION = 'entrega-1.2.0';
+export const CATALOG_VERSION = 'entrega-1.3.0';
 // Versiones anteriores que se siguen leyendo (sin migrar ni reescribir sus archivos).
-export const LEGACY_CATALOG_VERSIONS = Object.freeze(['entrega-1.0.0', 'entrega-1.1.0']);
+export const LEGACY_CATALOG_VERSIONS = Object.freeze(['entrega-1.0.0', 'entrega-1.1.0', 'entrega-1.2.0']);
+// Referencia de exposición para el generador, separada de los límites clínicos.
+export const RADIATION_MODEL = Object.freeze({
+  id: 'iss-leo-1', environment: 'ISS / órbita terrestre baja (LEO)', kind: 'synthetic',
+  dailyDoseRangeMsv: Object.freeze([0.4, 1.1]),
+  sources: Object.freeze([
+    'https://ntrs.nasa.gov/api/citations/20020073167/downloads/20020073167.pdf',
+    'https://www.nasa.gov/wp-content/uploads/2023/10/lsah-newsletter-2023-vol28-issue2.pdf',
+    'https://www.who.int/news-room/fact-sheets/detail/ionizing-radiation-and-health-effects',
+  ]),
+  scope: 'Rango histórico NASA de dosis equivalente a órganos hematopoyéticos en ISS; orienta la escala sintética, no calibra un dosímetro personal ni predice exposición en órbita lunar.',
+  riskContext: 'La OMS cita evidencia epidemiológica de aumento del riesgo de cáncer por encima de 100 mSv de dosis; no establece un umbral anual universal ni ausencia de riesgo por debajo. No se estima riesgo individual.',
+});
+const radiationRates = RADIATION_MODEL.dailyDoseRangeMsv.map(dose => dose * 1000 / 24);
 /** Espaciado de las lecturas del historial previo (antes del inicio de la ejecución). */
 export const HISTORY_STEP_SEC = 1800;
 export const MAX_HISTORY_DAYS = 30;
@@ -21,7 +34,9 @@ const capture = {stress: 'self_report'};
 
 // Ampliación del catálogo operativo; el catálogo original de entrega se conserva intacto.
 const radiation = {clave: 'rad', nombre: 'Tasa de dosis de radiación', unidad: 'µSv/h',
-  color: '#eab308', base: 20, amplitud: 3, min: 16, max: 24, lo: null, hi: null,
+  color: '#eab308', base: (radiationRates[0] + radiationRates[1]) / 2,
+  amplitud: (radiationRates[1] - radiationRates[0]) / 2,
+  min: radiationRates[0], max: radiationRates[1], lo: null, hi: null,
   sistema: 'Exposición a radiación', referenceKind: 'none', origin: 'docs/simisa/08-unificacion.md'};
 export const INDICATORS = Object.freeze([...listarIndicadores(), radiation].map(m => Object.freeze({
   ...m, periodSec: periods[m.clave], decimals: precision[m.clave],

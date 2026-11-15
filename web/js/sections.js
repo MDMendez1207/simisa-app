@@ -41,6 +41,7 @@ export function medicalPage(c) {
       ${g ? `<p class="section-gap"><strong>Por qué se mide en el espacio.</strong> ${esc(g.why)}</p>
       <div class="hazard-chips">${g.hazards.map(h => ext(HAZARDS[h], 'chip-link')).join('')}</div>
       <p class="hint section-gap"><strong>Cómo se mide:</strong> ${esc(g.measure)}<br>${esc(referenceText(m))}${hasReference(m) ? ' (ilustrativa)' : ''}</p>
+      ${g.context ? `<details class="guide-more"><summary>Contexto de exposición y evidencia</summary><p>${esc(g.context)}</p><p>${esc(g.evidence)}</p><ul>${g.sources.map(source => `<li>${ext(source)}</li>`).join('')}</ul></details>` : ''}
       <details class="guide-more"><summary>Prevención y riesgos relacionados</summary><ul>${g.prevent.map(p => `<li>${esc(p)}</li>`).join('')}</ul>
         <ul class="risk-list">${g.risks.map(r => `<li>${ext(RISKS[r])}: ${esc(RISKS[r].text)}</li>`).join('')}</ul></details>` : ''}
       <details class="guide-more"><summary>Consultar registro</summary>${c.result ? c.readingCard(m.clave) : '<p>Elegí un historial para consultar mediciones.</p>'}</details></article>`;

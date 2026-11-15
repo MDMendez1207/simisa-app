@@ -1,15 +1,16 @@
 import {createHash} from 'node:crypto';
-import {INDICATORS, SENSOR_INDICATORS, SOURCES, SCENARIOS, CATALOG_VERSION, HISTORY_STEP_SEC, MAX_HISTORY_DAYS, condition} from '../shared/catalog.js';
+import {INDICATORS, SENSOR_INDICATORS, SOURCES, SCENARIOS, CATALOG_VERSION, HISTORY_STEP_SEC, MAX_HISTORY_DAYS, RADIATION_MODEL, condition} from '../shared/catalog.js';
 import {CREW, SCENARIO_SUBJECT, publicMember} from '../shared/crew.js';
 
 // 1.1.0: el motor solo produce lecturas de sensores; el estrés percibido proviene del chequeo psicológico manual.
 // 2.0.0: una ejecución simula a toda la tripulación; los episodios preparados afectan a SCENARIO_SUBJECT.
 // 2.1.0: historial previo opcional (historyDays) con tiempos negativos y chequeos psicológicos sintéticos.
 // 2.2.0: dosímetro personal y tasa de dosis en µSv/h, sin umbrales clínicos configurados.
-export const ENGINE_VERSION = 'synthetic-2.2.0';
+// 2.3.0: escala de exposición ISS/LEO (0,4–1,1 mSv/día); perfil y fuentes persistidos.
+export const ENGINE_VERSION = 'synthetic-2.3.0';
 export const SCHEMA_VERSION = 2;
 /** Versiones del esquema 2 que se siguen leyendo. */
-export const COMPATIBLE_ENGINE_VERSIONS = Object.freeze(['synthetic-2.0.0', 'synthetic-2.1.0', ENGINE_VERSION]);
+export const COMPATIBLE_ENGINE_VERSIONS = Object.freeze(['synthetic-2.0.0', 'synthetic-2.1.0', 'synthetic-2.2.0', ENGINE_VERSION]);
 export const LEGACY_ENGINE_VERSIONS = Object.freeze(['synthetic-1.0.0', 'synthetic-1.1.0']);
 export const DEFAULT_CONFIG = Object.freeze({name: 'Recorrido de prueba', seed: 2026,
   scenario: 'recorrido', startTime: '2026-11-14T12:00:00.000Z', durationMinutes: 60, stepSec: 10, historyDays: 0});
@@ -83,9 +84,16 @@ function sample(metric, elapsed, config, member) {
     case 'gluc': value += 8 * Math.sin(elapsed / 7200 * Math.PI * 2) + noise * 2; break;
     case 'bmd': value += noise * 0.005; break;
     case 'sleep': value += noise * 0.4; break;
-    // Exposición compartida con pequeñas diferencias entre dosímetros. Independiente del esfuerzo
-    // y del episodio respiratorio; la onda de 90 min es un recurso sintético, no un modelo orbital.
-    case 'rad': value += 3 * Math.sin(elapsed / 5400 * Math.PI * 2) + CREW.indexOf(member) * 0.3 + noise * 0.25; break;
+    case 'rad': {
+      // Perfil común de exposición, independiente del esfuerzo y del episodio respiratorio.
+      // Las ondas de 7 días y 90 min son recursos sintéticos, no predicciones orbitales/solares.
+      const phase = mulberry32(config.seed ^ 0x726164)() * Math.PI * 2;
+      const personal = 2 * CREW.indexOf(member) / (CREW.length - 1) - 1;
+      const variation = 0.8 * Math.sin(elapsed / (7 * 86400) * Math.PI * 2 + phase)
+        + 0.15 * Math.sin(elapsed / 5400 * Math.PI * 2) + 0.03 * noise + 0.02 * personal;
+      value = metric.base + metric.amplitud * variation;
+      break;
+    }
   }
   value = round(clamp(value, ...metric.domain), metric.decimals);
   const isOximetry = metric.clave === 'spo2';
@@ -148,10 +156,12 @@ export function simulate(input = {}) {
   const payload = {schemaVersion: SCHEMA_VERSION, engineVersion: ENGINE_VERSION, catalogVersion: CATALOG_VERSION,
     config, crew: CREW.map(publicMember),
     indicators: INDICATORS, sources: SOURCES, measurements, events, checkins: historyCheckins(config),
+    radiationModel: RADIATION_MODEL,
     assumptions: ['Datos sintéticos para probar software; sin validación clínica.',
       'Relaciones y variaciones preparadas para la demostración; no son un modelo fisiológico validado.',
       'Unidades, escalas y referencias heredadas de SIMISA_entrega; referencias ilustrativas. Radiación amplía el catálogo con la tasa en µSv/h definida en docs/simisa/08-unificacion.md.',
-      'El dosímetro genera una tasa de dosis sintética cada minuto: base 20 µSv/h, oscilación de 90 min y ruido por semilla y tripulante. No representa dosis acumulada, dosis por órgano ni una predicción del entorno espacial. Sin umbrales de seguridad configurados; el dominio numérico solo limita el generador.',
+      'El dosímetro usa el perfil sintético ISS/LEO: 0,4–1,1 mSv/día como escala de exposición, equivalente a medias de 16,67–45,83 µSv/h. Cada minuto se registra una tasa en µSv/h; el historial previo conserva su muestreo de 30 minutos. La variación de 7 días y 90 min, la semilla y las diferencias entre tripulantes son recursos para probar software, no un modelo de transporte de radiación.',
+      'El rango documentado NASA corresponde a dosis equivalente a órganos hematopoyéticos en ISS; se usa solo para orientar la escala. No se convierte una lectura personal en dosis efectiva ni dosis por órgano; tampoco se predice exposición lunar ni riesgo individual. Los 100 mSv citados por la OMS son contexto epidemiológico, no un umbral anual automático. Sin umbrales de seguridad configurados.',
       'Las ausencias no son ceros. Las lecturas de baja calidad o inválidas no generan condiciones de indicador.',
       'Los signos vitales y registros fisiológicos provienen solo de sensores; no se admiten cargas manuales. El estrés percibido no se simula en la telemetría: se registra en el chequeo psicológico.',
       'El historial previo (tiempos negativos) se muestrea cada 30 minutos e incluye chequeos psicológicos sintéticos marcados como tales.']};

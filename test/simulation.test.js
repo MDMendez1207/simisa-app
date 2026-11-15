@@ -11,6 +11,7 @@ import {saveRun, readRun, listRuns, validateResult} from '../storage/files.js';
 import {buildIndex, observationAt} from '../shared/results.js';
 import {createAppServer} from '../server.js';
 import {memberView, SCENARIO_SUBJECT} from '../shared/crew.js';
+import {RADIATION_MODEL} from '../shared/catalog.js';
 
 const CDR = {Cookie: 'simisa_member=ana-torres'};
 
@@ -33,6 +34,17 @@ test('se conservan las definiciones de entrega y los intervalos de medición', (
   assert.equal(index.rad.length, 1441);
   assert.ok(index.rad.every(r => r.condition === 'unknown' && r.quality === 'valid'));
   assert.ok(!run.events.some(e => e.indicator === 'rad' && e.type === 'indicator'));
+  assert.deepEqual(run.radiationModel, RADIATION_MODEL);
+  // La integral temporal de las tasas durante 24 h produce una dosis en el intervalo ISS/LEO.
+  // Se calcula sobre las lecturas guardadas, sin usar la media por punto ni sumar tasas como dosis.
+  for (const member of run.crew) {
+    const readings = run.measurements.filter(r => r.subjectId === member.id && r.indicator === 'rad');
+    let doseMsv = 0;
+    for (let i = 1; i < readings.length; i++) {
+      doseMsv += (readings[i - 1].value + readings[i].value) / 2 * (readings[i].elapsedSec - readings[i - 1].elapsedSec) / 3600000;
+    }
+    assert.ok(doseMsv >= 0.4 && doseMsv <= 1.1, `${member.id}: ${doseMsv} mSv/día`);
+  }
   assert.equal(index.bmd.length, 1); assert.equal(index.sleep.length, 2);
   // El estrés percibido no se simula: solo proviene del chequeo psicológico.
   assert.equal(index.stress.length, 0);
@@ -98,6 +110,8 @@ test('la telemetría rechaza estrés simulado; resultados 1.0.0 se leen sin pres
     subject: {id: 'ana-torres', name: 'Ana Torres', fictional: true}, measurements: single.measurements.filter(mine), events: single.events.filter(e => mine(e))});
   assert.equal(validateResult(legacy), legacy);
   assert.equal(buildIndex(legacy).stress.length, 0);
+  const {radiationModel, ...priorDosimeter} = payload;
+  assert.ok(validateResult(rehash({...priorDosimeter, engineVersion: 'synthetic-2.2.0', catalogVersion: 'entrega-1.2.0'})));
   // El catálogo ampliado no impide abrir ejecuciones de tripulación sin dosímetro.
   for (const engineVersion of ['synthetic-2.0.0', 'synthetic-2.1.0']) {
     const previous = rehash({...payload, engineVersion, catalogVersion: 'entrega-1.1.0',

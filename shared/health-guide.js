@@ -87,6 +87,13 @@ export const INDICATOR_GUIDE = Object.freeze({
     prevent: ['Completar el chequeo psicológico cada día.', 'Mantener tiempo de descanso y comunicación con la tripulación y la familia.']},
   rad: {why: 'La radiación espacial es uno de los peligros identificados por NASA HRP. El dosímetro permite consultar la evolución de la exposición registrada junto a la persona.',
     hazards: ['radiation'], risks: [], measure: 'Dosímetro personal, una lectura por minuto de la tasa de dosis en µSv/h. Se consulta en Cuerpo completo.',
+    context: 'Para ISS/LEO, NASA publicó un rango de 0,4–1,1 mSv/día de dosis equivalente a órganos hematopoyéticos (informe de 2002); una publicación de NASA de 2023 cita un orden de 0,5 mSv/día. El rango orienta la escala de datos sintéticos y no equivale a calibrar el dosímetro ni a calcular dosis efectiva individual.',
+    evidence: 'La OMS informa evidencia epidemiológica de aumento del riesgo de cáncer por encima de 100 mSv de dosis. No establece un umbral anual universal ni ausencia de riesgo por debajo; SIMISA no calcula riesgo de cáncer.',
+    sources: [
+      {name: 'NASA · Exposición histórica en ISS (2002, sección 2.3)', url: 'https://ntrs.nasa.gov/api/citations/20020073167/downloads/20020073167.pdf'},
+      {name: 'NASA · Space Radiation Health Standard (2023)', url: 'https://www.nasa.gov/wp-content/uploads/2023/10/lsah-newsletter-2023-vol28-issue2.pdf'},
+      {name: 'OMS · Radiación ionizante y efectos en la salud', url: 'https://www.who.int/news-room/fact-sheets/detail/ionizing-radiation-and-health-effects'},
+    ],
     prevent: ['Revisar la tendencia y el período de adquisición del dosímetro.', 'La interpretación de la exposición corresponde al equipo responsable de protección radiológica de la misión.']},
 });
 
