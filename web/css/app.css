@@ -83,7 +83,7 @@ html[data-reduced=true] *,html[data-reduced=true] *::before,html[data-reduced=tr
 .tb-right{display:flex;align-items:center;gap:16px}#subjectPicker select{width:auto;min-height:34px;margin:0 0 0 8px;padding:5px 8px}
 @media(max-width:700px){.tb-right{flex-wrap:wrap;gap:8px}}
 .nav-item[hidden]{display:none!important}
-.chart-now{stroke:#f39c12;stroke-width:1;stroke-dasharray:4 4;opacity:.8}.chart-now-label{fill:#f3c27a!important;font-size:10px!important}
+.chart-now{stroke:#f39c12;stroke-width:1;stroke-dasharray:4 4;opacity:.8}.chart-now-label{fill:#f3c27a!important;font-size:10px}
 
 /* ===== Pulido visual (reloj de misión, lecturas, gráficas, tripulación) ===== */
 .mission-clock{display:flex;align-items:center;gap:12px;padding:6px 14px 6px 6px;border:1px solid var(--line);border-radius:999px;background:linear-gradient(120deg,rgba(0,242,255,.07),rgba(59,130,246,.05))}
@@ -148,7 +148,7 @@ html[data-reduced=true] *,html[data-reduced=true] *::before,html[data-reduced=tr
 .meter-cell{min-width:130px}.meter{height:7px;border-radius:99px;background:#1a2b40;overflow:hidden;margin-bottom:4px}.meter span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#00f2ff,#3b82f6)}
 .meter.mid span{background:linear-gradient(90deg,#7fd6c9,#4fa3d9)}.meter.warn span{background:#f39c12}.meter.bad span{background:#e74c3c}.meter-cell small{font-size:11px;color:var(--muted)}
 .pill.bad{color:#ffb3ab;background:rgba(231,76,60,.14);border-color:rgba(231,76,60,.4)}
-.small-btn{min-height:32px!important;padding:5px 11px!important;font-size:12px!important}
+.small-btn{min-height:38px!important;padding:6px 12px!important;font-size:var(--text-label,15px)!important}
 @media(max-width:700px){.issue-list li{grid-template-columns:1fr;gap:4px}}
 
 /* ===== Guía de salud (NASA HRP): qué hacer ahora, peligros y escalamiento ===== */

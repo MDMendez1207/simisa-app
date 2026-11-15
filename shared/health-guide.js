@@ -42,7 +42,7 @@ export const RISKS = Object.freeze({
 
 /** Función de cada región de la figura anatómica (texto general de anatomía). */
 export const REGION_FUNCTION = Object.freeze({
-  cuerpo: 'Vista general: temperatura, pulso y oxigenación, junto con la exposición registrada por el dosímetro personal. La radiación no se asigna a un órgano específico.',
+  cuerpo: 'Vista general: temperatura, pulso y oxigenación resumen el estado del organismo.',
   pecho: 'El corazón bombea la sangre que lleva oxígeno y nutrientes a todo el cuerpo; la presión arterial refleja la fuerza de ese bombeo sobre los vasos.',
   pulmones: 'Los pulmones intercambian gases: incorporan oxígeno a la sangre y eliminan dióxido de carbono.',
   abdomen: 'El sistema digestivo transforma los alimentos en energía; la glucosa en sangre muestra cómo se usa y regula esa energía.',
@@ -86,7 +86,7 @@ export const INDICATOR_GUIDE = Object.freeze({
     hazards: ['isolation', 'distance', 'radiation'], risks: ['behavior', 'teamwork', 'sleep'], measure: 'Chequeo psicológico diario: el propio tripulante informa ánimo y estrés (0–10).',
     prevent: ['Completar el chequeo psicológico cada día.', 'Mantener tiempo de descanso y comunicación con la tripulación y la familia.']},
   rad: {why: 'La radiación espacial es uno de los peligros identificados por NASA HRP. El dosímetro permite consultar la evolución de la exposición registrada junto a la persona.',
-    hazards: ['radiation'], risks: [], measure: 'Dosímetro personal, una lectura por minuto de la tasa de dosis en µSv/h. Se consulta en Cuerpo completo.',
+    hazards: ['radiation'], risks: [], measure: 'Dosímetro personal, una lectura por minuto de la tasa de dosis en µSv/h. Se consulta en Abdomen como categoría de navegación, sin atribuir la exposición a ese órgano.',
     context: 'Para ISS/LEO, NASA publicó un rango de 0,4–1,1 mSv/día de dosis equivalente a órganos hematopoyéticos (informe de 2002); una publicación de NASA de 2023 cita un orden de 0,5 mSv/día. El rango orienta la escala de datos sintéticos y no equivale a calibrar el dosímetro ni a calcular dosis efectiva individual.',
     evidence: 'La OMS informa evidencia epidemiológica de aumento del riesgo de cáncer por encima de 100 mSv de dosis. No establece un umbral anual universal ni ausencia de riesgo por debajo; SIMISA no calcula riesgo de cáncer.',
     sources: [

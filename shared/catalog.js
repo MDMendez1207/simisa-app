@@ -62,13 +62,13 @@ export const SOURCES = Object.freeze([
 ].map(Object.freeze));
 export const REGIONS = Object.freeze([
   {id: 'cuerpo', name: 'Cuerpo completo', image: 'cuerpo-holografico-v2.png',
-    metrics: ['temp', 'hr', 'spo2', 'rad'], note: 'Resumen de indicadores y exposición registrada por el dosímetro personal.'},
+    metrics: ['temp', 'hr', 'spo2'], note: 'Resumen de los indicadores generales.'},
   {id: 'pecho', name: 'Pecho y corazón', image: 'corazon-oblicuo.png',
     metrics: ['hr', 'sys', 'dia'], note: 'La presión conserva sistólica y diastólica en mmHg, adquiridas juntas.'},
   {id: 'pulmones', name: 'Pulmones', image: 'pulmones-oblicuos.png',
     metrics: ['rr', 'spo2'], note: 'Agrupa respiración y oxigenación. Una lectura no localiza una lesión pulmonar.'},
   {id: 'abdomen', name: 'Abdomen', image: 'abdomen-oblicuo.png',
-    metrics: ['gluc'], note: 'Acceso al grupo metabólico. La glucosa no describe el estado del estómago.'},
+    metrics: ['gluc', 'rad'], note: 'Glucosa y radiación. El dosímetro se agrupa aquí para organizar la navegación; registra exposición personal.'},
   {id: 'huesos', name: 'Huesos y articulaciones', image: 'piernas-oblicuas.png',
     metrics: ['bmd'], note: 'Densidad ósea sintética en g/cm², según SIMISA_entrega. No se convierte desde QUS ni se actualiza como un signo vital.'},
   {id: 'cabeza', name: 'Cabeza y cerebro', image: 'cabeza-lateral.png',

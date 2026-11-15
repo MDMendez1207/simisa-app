@@ -10,10 +10,10 @@ import {DEVICES} from '../../shared/devices.js';
 // Nombres de dispositivo de SIMISA_entrega/js/data/sensores.js.
 export const SOURCE_LABEL = {...Object.fromEntries(Object.entries(DEVICES).map(([id, d]) => [id, d.name])), bienestar: 'Chequeo psicológico'};
 export const REGION_NOTE = {
-  cuerpo: 'Tus indicadores generales y la exposición registrada por el dosímetro, en una sola vista.',
+  cuerpo: 'Tus indicadores generales, en una sola vista.',
   pecho: 'Frecuencia cardíaca y presión arterial.',
   pulmones: 'Frecuencia respiratoria y saturación de oxígeno.',
-  abdomen: 'Seguimiento de glucosa y evolución metabólica.',
+  abdomen: 'Glucosa y radiación. El dosímetro se incluye en esta categoría para facilitar su ubicación.',
   huesos: 'Registro de densidad ósea y evolución de las mediciones.',
   cabeza: 'Descanso y bienestar.',
 };

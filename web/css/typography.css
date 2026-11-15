@@ -1,0 +1,116 @@
+/* Escala de lectura compartida. Conserva fuentes, colores y formas del tema. */
+:root {
+  --text-caption: .8125rem;
+  --text-small: .875rem;
+  --text-label: .9375rem;
+  --text-heading: 1rem;
+  --text-body: 1.0625rem;
+  --text-section: 1.1875rem;
+}
+
+body { font-size: var(--text-body); line-height: 1.6; }
+h1, .sec-head h1 { font-size: clamp(1.625rem, 1.4rem + .5vw, 1.875rem); line-height: 1.25; }
+h2, .card h2 { font-size: var(--text-section); line-height: 1.35; }
+h3, .card h3, .reading .reading-top h3 { font-size: var(--text-heading); line-height: 1.45; }
+.sec-head p, .region-function { font-size: var(--text-body); line-height: 1.6; }
+.hint, .small, .mono, .card .csub, .run-meta, .banner,
+.empty, .stats, .source-card dl, .detail-list { font-size: var(--text-small); line-height: 1.6; }
+.eyebrow, .nav-label { font-size: var(--text-caption); letter-spacing: .1em; }
+.tag { font-size: .75rem; }
+.pill { font-size: var(--text-caption); line-height: 1.4; white-space: normal; }
+summary, .guide-more summary { font-size: var(--text-label); line-height: 1.5; }
+
+/* Navegación y encabezado: espacio proporcional al nuevo tamaño de letra. */
+.nav-item { font-size: var(--text-label); line-height: 1.4; min-height: 46px; }
+.nav-item svg { width: 20px; height: 20px; flex-basis: 20px; }
+.brand-txt b, .tb-title { font-size: var(--text-body); }
+.brand-txt small, .tb-crumb, .side-user .u small { font-size: var(--text-caption); line-height: 1.5; }
+.side-user .u b { font-size: var(--text-label); }
+.side-user .avatar { font-size: var(--text-caption); }
+.brand-logo { flex-shrink: 0; line-height: 0; }
+.brand-logo.sm .simisa-brand-mark { display: block; width: 38px; height: 56px; }
+.la-top .brand-logo .simisa-brand-mark { display: block; width: 52px; height: 78px; }
+.tb-right { font-size: var(--text-small); }
+#subjectPicker label { font-size: var(--text-caption); }
+#subjectPicker select { font-size: var(--text-small); min-height: 40px; max-width: 280px; }
+.mission-clock small { font-size: .75rem; line-height: 1.4; }
+.mission-clock .header-time { font-size: 1.125rem; }
+.clock-play { width: 40px; height: 40px; }
+
+/* Controles y tablas mantienen la misma jerarquía que el contenido. */
+label, .inline-select, .history-page-label { font-size: var(--text-label); }
+input, select, textarea { font-size: 1rem; line-height: 1.4; }
+.btn, .btn-main, .chip, .inline-select select,
+.anatomy-toolbar .btn, .event-item .btn, .crew-actions .btn { font-size: var(--text-label); line-height: 1.4; }
+.btn, .btn-main, .chip { min-height: 44px; }
+.history-pagination > .row { gap: 12px; }
+.history-page-label input { width: 68px; }
+table { font-size: var(--text-label); line-height: 1.5; }
+th { font-size: var(--text-caption); letter-spacing: .06em; }
+.timestamp, .time-cell .timestamp, .report-list .timestamp,
+.run-item .timestamp { font-size: var(--text-small); }
+
+/* Lecturas y estados: valores destacados, unidades y fechas fáciles de leer. */
+.reading .kv { font-size: 2rem; line-height: 1.2; }
+.reading .ku, .reading small, .reading-foot small,
+.reading .reading-note { font-size: var(--text-small); }
+.reading .reading-note { line-height: 1.55; }
+.anatomy-toolbar strong { font-size: var(--text-heading); }
+.anatomy-footer { font-size: var(--text-caption); }
+.timeline .clock { font-size: var(--text-label); }
+.history-chart text { font-size: 15px; }
+.history-chart .chart-now-label { font-size: 14px; }
+.crew-head h2 { font-size: var(--text-section); }
+.crew-head small, .crew-values small, .crew-values .ku { font-size: var(--text-caption); line-height: 1.5; }
+.crew-values strong { font-size: 1.375rem; }
+.crew-values { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+.sensor-kpi small, .sensor-kpi span, .device-name small,
+.block-hint, .meter-cell small { font-size: var(--text-caption); line-height: 1.5; }
+.sensor-kpi b { font-size: 2rem; }
+.device-name b { font-size: var(--text-label); }
+.issue-list li, .event-item p { font-size: var(--text-label); }
+.event-item small { font-size: var(--text-caption); }
+
+/* Guías, conversación y acceso comparten los tamaños del resto de la interfaz. */
+.guide-steps, .guide-more p, .guide-more li, .library-card p,
+.escalation-steps li { font-size: var(--text-label); line-height: 1.65; }
+.guide-source, .chip-link { font-size: var(--text-caption); }
+.permissions-card ul { padding-inline: 1.5rem .5rem; margin-block: .75rem; list-style-position: outside; }
+.permissions-card li + li { margin-top: .5rem; }
+.library-card h2 { font-size: var(--text-section); }
+.conversation-message p { font-size: var(--text-body); line-height: 1.65; }
+.conversation-message strong, .conversation-message small { font-size: var(--text-small); }
+#notice { font-size: var(--text-label); }
+.login-wrap { margin-block: auto; }
+.login-screen { align-items: flex-start; }
+.la-top .brand-txt b { font-size: 1.5rem; }
+.la-top .brand-txt small, .la-eyebrow, .la-metrics small,
+.login-note, .crew-code { font-size: var(--text-caption); }
+.la-bottom h2 { font-size: 2.125rem; line-height: 1.25; }
+.la-bottom p, .login-form .sub, .login-scope { font-size: var(--text-label); line-height: 1.65; }
+.la-metrics b { font-size: 1.75rem; }
+.login-form h1 { font-size: 1.625rem; }
+.crew-who b { font-size: var(--text-heading); }
+.crew-who small { font-size: var(--text-small); }
+.crew-avatar { width: 44px; height: 44px; font-size: var(--text-label); }
+
+@media (min-width: 1151px) {
+  #app { grid-template-columns: 256px minmax(0, 1fr); }
+}
+@media (min-width: 961px) and (max-width: 1150px) {
+  #app { grid-template-columns: 236px minmax(0, 1fr); }
+}
+@media (max-width: 960px) {
+  .sidebar { width: 284px; max-width: calc(100vw - 24px); }
+}
+@media (max-width: 860px) {
+  .la-bottom h2 { font-size: 1.75rem; }
+}
+@media (max-width: 700px) {
+  #subjectPicker select { max-width: 100%; font-size: var(--text-small); }
+  .mission-clock small { font-size: .75rem; }
+  .mission-clock .header-time { font-size: 1.125rem; }
+  .chart-head, .guide-head { flex-wrap: wrap; }
+  .history-pagination > .row { width: 100%; justify-content: space-between; gap: 8px; }
+  .history-page-label { gap: 5px; }
+}

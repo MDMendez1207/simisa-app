@@ -18,7 +18,7 @@ function sessionMember(req) {
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const mime = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.json': 'application/json; charset=utf-8', '.md': 'text/plain; charset=utf-8'};
+  '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.webp': 'image/webp', '.json': 'application/json; charset=utf-8', '.md': 'text/plain; charset=utf-8'};
 
 function json(res, status, body, headers = {}) {
   res.writeHead(status, {'Content-Type': mime['.json'], ...headers});

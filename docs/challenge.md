@@ -87,7 +87,7 @@ Las páginas de NASA HRP se consultaron el 14 de noviembre de 2026; las de la CS
 | Salud conductual, aislamiento y confinamiento | Chequeo psicológico diario; en la demo, el estrés de un tripulante aumenta antes del episodio | Sí |
 | Ambiente cerrado hostil | Episodio respiratorio preparado (SpO₂, respiración y pulso relacionados) | Sí (simulado) |
 | Distancia a la Tierra | Informes para Tierra y supervisión a bordo por comandante y médica; no se simula la demora de comunicación | Parcial |
-| Radiación | Dosímetro personal y tasa de dosis sintética en µSv/h, guardada por tripulante y consultable en Cuerpo completo; sin dosis acumulada ni evaluación de riesgo | Parcial |
+| Radiación | Dosímetro personal y tasa de dosis sintética en µSv/h, guardada por tripulante y agrupada en Abdomen como categoría de navegación; sin dosis acumulada ni evaluación de riesgo | Parcial |
 | Cambios inmunológicos, nutrición | Sin indicadores ni simulación específicos | No |
 
 ### Preguntas guía
