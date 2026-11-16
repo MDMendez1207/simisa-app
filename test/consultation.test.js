@@ -5,6 +5,10 @@ import {buildIndex, observationAt, summarize} from '../shared/results.js';
 import {assistantAnswer} from '../web/js/presentation.js';
 import {researchData, researchCSV} from '../web/js/sections.js';
 import {memberView, SCENARIO_SUBJECT} from '../shared/crew.js';
+import {setLanguage, getLanguage, html} from '../web/js/i18n.js';
+
+test.beforeEach(() => setLanguage('es'));
+test.afterEach(() => setLanguage('en'));
 
 test('el asistente consulta la lectura y el momento elegidos, incluyendo señal ausente', () => {
   const result = memberView(simulate({seed: 31415}), SCENARIO_SUBJECT), index = buildIndex(result);
@@ -25,6 +29,19 @@ test('el asistente consulta la lectura y el momento elegidos, incluyendo señal 
   assert.match(assistantAnswer('Dosis acumulada', context(1060)), /no calcula la dosis acumulada/);
   const old = {...result, indicators: result.indicators.filter(m => m.clave !== 'rad')};
   assert.match(assistantAnswer('Radiación', {...context(1060), result: old}), /no contiene lecturas/);
+  setLanguage('en');
+  assert.equal(getLanguage(), 'en');
+  assert.match(assistantAnswer('Oxygen saturation trend', context(1060)), /mean/);
+  assert.match(assistantAnswer('Which sensors have no reading?', context(2340)), /no current reading/);
+  assert.match(assistantAnswer('Cumulative radiation dose', context(1060)), /does not calculate cumulative dose/);
+  assert.match(assistantAnswer('Average radiation dose rate', context(1060)), /No reference threshold/);
+  assert.match(assistantAnswer('Treatment', context(1060)), /medical team/);
+  const note = 'Estado de ánimo <img src=x>';
+  assert.equal(html`<p>${note}</p><input value="Estado de ánimo" placeholder="Escribí tu consulta…">`, `<p>${note}</p><input value="Estado de ánimo" placeholder="Type your question…">`);
+  setLanguage('es');
+  assert.equal(html`<h2>Salud corporal</h2>`, '<h2>Salud corporal</h2>');
+  setLanguage('en');
+  assert.equal(html`<h2>Salud corporal</h2>`, '<h2>Body health</h2>');
 });
 
 test('la tabla de investigación excluye valores inválidos y conserva origen en su exportación', () => {
@@ -39,6 +56,11 @@ test('la tabla de investigación excluye valores inválidos y conserva origen en
   assert.ok(csv.includes('Saturación O₂'));
   assert.ok(csv.includes('Tasa de dosis de radiación'));
   assert.equal(rows.find(r => r.id === 'rad').count, index.rad.filter(r => r.elapsedSec <= 1800).length);
+  setLanguage('en');
+  const english = researchCSV(result, index, 1800);
+  assert.ok(english.includes('Data origin'));
+  assert.ok(english.includes('O₂ saturation'));
+  assert.ok(english.includes('Radiation dose rate'));
 });
 
 test('estado de sensores: desconexión, señal inválida y batería baja como posibles problemas', async () => {

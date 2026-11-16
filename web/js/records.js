@@ -1,3 +1,4 @@
+import {t, html, getLocale} from './i18n.js';
 import {escapar as esc} from './core/utilidades.js';
 import {timeMarkup} from './core/formatos.js';
 
@@ -12,18 +13,18 @@ export function recordsTable({rows = [], metric, elapsedSec, fromSec, page = 0, 
   const selected = visible.slice(Math.max(0, end - PAGE_SIZE), end).reverse();
   const body = selected.map(r => {
     const hasValue = Number.isFinite(r.value);
-    const value = hasValue ? `${r.value.toFixed(metric.decimals)} <span class="record-unit">${esc(r.unit)}</span>` : '—';
-    const issue = r.availability === 'disconnected' ? ['Sin señal', 'warn', 'El sensor no transmitió una lectura en este momento.']
-      : r.quality === 'invalid' ? ['Descartada', 'bad', 'Lectura inválida: se excluye de la gráfica y de los cálculos.']
-      : r.quality === 'low_quality' ? ['Señal débil', 'warn', 'Lectura de baja calidad: se excluye de la gráfica y de los cálculos.']
-      : !hasValue ? ['Sin lectura', 'neutral', 'No hay un valor registrado; no se interpreta como cero.']
-      : r.captureMethod === 'self_report' && r.synthetic ? ['Historial sintético', 'neutral', 'Chequeo generado en el historial previo.'] : null;
+    const value = hasValue ? `${r.value.toFixed(metric.decimals)} <span class="record-unit">${esc(t(r.unit))}</span>` : '—';
+    const issue = r.availability === 'disconnected' ? [t('Sin señal'), 'warn', t('El sensor no transmitió una lectura en este momento.')]
+      : r.quality === 'invalid' ? [t('Descartada'), 'bad', t('Lectura inválida: se excluye de la gráfica y de los cálculos.')]
+      : r.quality === 'low_quality' ? [t('Señal débil'), 'warn', t('Lectura de baja calidad: se excluye de la gráfica y de los cálculos.')]
+      : !hasValue ? [t('Sin lectura'), 'neutral', t('No hay un valor registrado; no se interpreta como cero.')]
+      : r.captureMethod === 'self_report' && r.synthetic ? [t('Historial sintético'), 'neutral', t('Chequeo generado en el historial previo.')] : null;
     return `<tr><td class="time-cell">${timeMarkup(r.timestamp, {seconds: true, year: r.timestamp.slice(0, 4) !== referenceTime.slice(0, 4)})}</td>
       <td><div class="record-value"><span>${value}</span>${issue ? `<span class="tag ${issue[1]}" title="${esc(issue[2])}">${issue[0]}</span>` : ''}</div></td></tr>`;
-  }).join('') || '<tr><td colspan="2" class="empty">Sin registros en el período seleccionado.</td></tr>';
+  }).join('') || html('<tr><td colspan="2" class="empty">Sin registros en el período seleccionado.</td></tr>');
   const first = count ? current * PAGE_SIZE + 1 : 0, last = Math.min(count, (current + 1) * PAGE_SIZE);
-  const fmt = n => n.toLocaleString('es-AR');
-  return {page: current, html: `<div class="table-scroll records-scroll"><table class="records-table"><thead><tr><th scope="col">Fecha y hora (UTC)</th><th scope="col">Valor</th></tr></thead><tbody id="historyRows">${body}</tbody></table></div>
+  const fmt = n => n.toLocaleString(getLocale());
+  return {page: current, html: html`<div class="table-scroll records-scroll"><table class="records-table"><thead><tr><th scope="col">Fecha y hora (UTC)</th><th scope="col">Valor</th></tr></thead><tbody id="historyRows">${body}</tbody></table></div>
     <div class="history-pagination"><span class="hint">${fmt(first)}–${fmt(last)} de ${fmt(count)} registros · ${PAGE_SIZE} por página</span>
       <nav class="row" aria-label="Paginación de registros">
         <button class="btn ghost small-btn" id="historyPrevious" data-action="historyPage" data-page="${current - 1}" ${current === 0 ? 'disabled' : ''}>Anterior</button>

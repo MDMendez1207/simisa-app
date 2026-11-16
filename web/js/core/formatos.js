@@ -1,4 +1,5 @@
 /** Formatos de presentación: siempre UTC y sin alterar los datos guardados. */
+import {getLanguage} from '../i18n.js';
 const pad = value => String(value).padStart(2, '0');
 
 export function formatDuration(seconds) {
@@ -11,7 +12,7 @@ export function formatDuration(seconds) {
   for (const [size, label] of units) {
     const count = Math.floor(rest / size);
     rest %= size;
-    if (count) parts.push(`${count} ${label === 'días' && count === 1 ? 'día' : label}`);
+    if (count) parts.push(`${count} ${label === 'días' ? getLanguage() === 'en' ? count === 1 ? 'day' : 'days' : count === 1 ? 'día' : 'días' : label}`);
     if (parts.length === 2) break;
   }
   return parts.join(' ');

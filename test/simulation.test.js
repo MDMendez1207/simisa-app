@@ -174,6 +174,15 @@ test('API guarda, reinicia el servicio y vuelve a leer exactamente el archivo', 
     assert.equal((await fetch(url + '/server.js')).status, 404);
     assert.equal((await fetch(url + '/api/runs', {method: 'POST', headers: {'Content-Type': 'application/json', Origin: 'https://example.org', ...CDR}, body: '{}'})).status, 403);
     assert.equal((await fetch(url + '/shared/catalog.js')).status, 200);
+    const landing = await (await fetch(url + '/')).text();
+    assert.match(landing, /<html lang="en">/);
+    assert.equal((await fetch(url + '/js/i18n.js')).status, 200);
+    for (const language of ['en', 'es']) {
+      const documentation = await fetch(url + `/docs/${language}/README.md`);
+      assert.equal(documentation.status, 200);
+      assert.match(await documentation.text(), /SIMISA/);
+    }
+    assert.equal((await fetch(url + '/docs/%2e%2e%5cserver.js')).status, 403);
     assert.equal((await fetch(url + '/assets/corazon-oblicuo.png')).headers.get('content-type'), 'image/png');
   } finally { await close(server); }
   server = createAppServer({dataDir: dir}); url = await listen(server);

@@ -109,8 +109,9 @@ export function createAppServer({dataDir = DEFAULT_DATA_DIR, publicHosts = [], r
       if (route.startsWith('/api/')) return json(res, 404, {error: 'Recurso no encontrado.'});
       if (!['GET', 'HEAD'].includes(req.method)) return json(res, 405, {error: 'Método no permitido.'});
       const shared = route.startsWith('/shared/');
-      const base = path.join(root, shared ? 'shared' : 'web');
-      const relative = shared ? route.slice(8) : route === '/' ? 'index.html' : route.slice(1);
+      const docs = route.startsWith('/docs/');
+      const base = path.join(root, shared ? 'shared' : docs ? 'docs' : 'web');
+      const relative = shared ? route.slice(8) : docs ? route.slice(6) : route === '/' ? 'index.html' : route.slice(1);
       const filename = path.resolve(base, relative);
       if (!filename.startsWith(base + path.sep) || relative.split(/[\\/]/).some(p => p.startsWith('.'))) return json(res, 403, {error: 'Ruta no permitida.'});
       const body = await readFile(filename);

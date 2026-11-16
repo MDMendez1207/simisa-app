@@ -1,164 +1,138 @@
-# SIMISA · Simulación y anatomía
+# SIMISA · Simulation and anatomy
 
-Prototipo para el desafío *Create Health Monitoring Software for Astronauts on Space Missions* de NASA Space Apps 2026 ([enunciado y cobertura](docs/challenge.md)). Proyecto nuevo construido a partir de `SIMISA_modular/SIMISA_entrega`. Los originales del directorio padre se conservan. Requiere Node.js 22 o posterior; no necesita descargar dependencias.
+Prototype for NASA Space Apps 2026’s *Create Health Monitoring Software for Astronauts on Space Missions* ([challenge and coverage](docs/en/challenge.md)). Requires Node.js 22 or later, with no dependencies to download.
 
-## Abrir la aplicación
+[Español](docs/es/README.md) · [Decisions](docs/en/decisions.md) · [Validation](docs/en/validation.md) · [Tools and AI](docs/en/tools-and-ai.md) · [Illustration provenance](docs/en/illustration-provenance.md)
 
-En Windows, ejecutar **Iniciar SIMISA.cmd** y abrir [SIMISA local](http://127.0.0.1:4180). Mantener abierta la ventana de la aplicación.
+## Language
 
-También se puede iniciar desde esta carpeta:
+The website opens in **English** on the first visit. The **ES / EN** button on the sign-in screen and application header switches languages and remembers the preference. The current view, mission time and form drafts are retained. User notes, crew names, saved measurements and identifiers keep their original content.
+
+The interface uses concise translations and flexible controls to accommodate both languages. Documentation is organized in `docs/en/` and `docs/es/`; both sections are also linked from Settings → Preferences. Existing documentation paths provide links to the language sections.
+
+## Build tools and AI use
+
+The app was built with **JavaScript (ES modules), HTML, CSS and SVG**, on **Node.js 22 or later**, using native modules for the server, files, data integrity and tests. Development used Windows, PowerShell, Git/GitHub and browser review. The repository includes a Vercel showcase build and a Cloudflare tunnel option.
+
+**OpenAI Codex** assisted with material analysis, implementation, code review, checks and documentation. Anatomy illustrations were generated with **Codex’s integrated image tool**, retaining prompts and provenance. An auxiliary **OpenCode** configuration is also present in the workspace; the available material does not identify which models were used with it.
+
+The [tools inventory and AI disclosure](docs/en/tools-and-ai.md) records the purpose and evidence for each resource. The in-app assistant uses programmed local queries over simulation results.
+
+## Open the app
+
+On Windows, run **Iniciar SIMISA.cmd** and open [local SIMISA](http://127.0.0.1:4180). Keep the application window open.
+
+Alternatively, start it from the project folder:
 
 ```powershell
 node server.js
 ```
 
-El servicio escucha exclusivamente en `127.0.0.1`. El puerto por defecto es 4180. Se puede cambiar mediante la variable `PORT`.
+The service listens only on `127.0.0.1`. The default port is 4180; set `PORT` to change it.
 
-## Deploy en Vercel (web de muestra)
+## Crew and permissions
 
-El repositorio incluye `vercel.json` y no requiere base de datos, cuentas de almacenamiento ni variables de entorno. En **New Project**, importar `MDMendez1207/simisa-app`, usar **Other**, rama **master**, raíz **./**, comando **npm run build:vercel** y salida **public**. Los dos últimos valores ya están definidos en `vercel.json`; mantener los valores del repositorio.
+SIMISA is a control center for four fictional crew members. On opening the website, select a crew profile (demo identification without a password). The server applies that member’s permissions using a session cookie.
 
-El build copia la interfaz, los módulos compartidos y los dos historiales sintéticos incluidos a `public/`. Ninguna actividad local se publica. Los historiales se sirven como archivos estáticos; `api/simulate.js` ejecuta nuevas simulaciones sin escribir en disco y transmite sus resultados por partes para soportar historiales grandes.
-
-En la web publicada, nuevas ejecuciones, chequeos, conversaciones, revisiones e informes se mantienen **solo en la memoria de cada pestaña**. Recargar, cerrar o cambiar la sesión reinicia estas interacciones; los historiales incluidos siempre vuelven a estar disponibles. Se pueden descargar resultados e informes antes de recargar. La identidad de muestra se recuerda en `sessionStorage` para permitir el ingreso. Los perfiles organizan la interfaz; no hay autenticación real ni confidencialidad para los datos ficticios publicados.
-
-La aplicación local (`npm start`) y el simulador independiente conservan su almacenamiento en archivos. El build no modifica `web/`, `shared/` ni `data/runs/`; `public/` es una salida generada e ignorada por Git.
-
-Referencias: [configuración de Vercel](https://vercel.com/docs/project-configuration/vercel-json), [funciones Node.js](https://vercel.com/docs/functions/runtimes/node-js) y [límites y transmisión de respuestas](https://vercel.com/docs/functions/limitations).
-
-## Enlace público local (túnel)
-
-Para mostrar la demo desde otro equipo sin desplegar un servidor:
-
-1. Instalar una vez `cloudflared`: `winget install --id Cloudflare.cloudflared` (cerrar y reabrir la consola).
-2. Ejecutar **Publicar SIMISA.cmd**. Abre el servidor en otra ventana y muestra un enlace `https://<algo>.trycloudflare.com`.
-3. Para una demo pública sin escrituras remotas: `"Publicar SIMISA.cmd" lectura`. Desde el túnel se rechazan los `POST` (simulaciones, chequeos, informes); en `127.0.0.1` todo sigue habilitado.
-
-El servidor sigue escuchando solo en `127.0.0.1`; el túnel es quien lo expone. Solo se aceptan los hosts de `SIMISA_PUBLIC_HOSTS` (lista separada por comas, admite `*.dominio`), y las escrituras exigen que el origen coincida con ese host. `SIMISA_READONLY=1` activa el modo lectura. Cerrar la ventana del túnel corta el acceso. Cualquiera con el enlace puede ver los datos: no cargar información personal real.
-
-## Tripulación y permisos
-
-SIMISA funciona como centro de control de una tripulación ficticia de cuatro personas. Al abrir la web se elige quién ingresa (identificación de demostración, sin contraseña); el servidor aplica los permisos según ese tripulante mediante una cookie de sesión.
-
-| Tripulante | Rol | Acceso |
+| Crew member | Role | Access |
 | --- | --- | --- |
-| Ana Torres (CDR) | Comandante | Toda la tripulación: Centro de tripulación, alertas, investigación y simulación |
-| Lucía Ferreyra (CMO) | Médica de tripulación | Igual que comandante |
-| Kenji Mori (MS1) | Especialista de misión | Solo su propia información |
-| Omar Haddad (MS2) | Especialista de misión | Solo su propia información |
+| Ana Torres (CDR) | Commander | Entire crew: Crew health center, alerts, research and simulation |
+| Lucía Ferreyra (CMO) | Crew physician | Same as commander |
+| Kenji Mori (MS1) | Mission specialist | Own information only |
+| Omar Haddad (MS2) | Mission specialist | Own information only |
 
-- Sin acceso de tripulación, la API entrega solo la vista propia de la ejecución y de la actividad; las demás vistas devuelven 403.
-- Cada tripulante completa únicamente su propio chequeo psicológico (ánimo y estrés percibido). Comandante y médica pueden consultarlo, no completarlo por otro.
-- Los episodios preparados de los escenarios (SpO₂, desconexión, señal inválida) afectan a Kenji Mori; el resto de la tripulación varía dentro de referencia.
+- Without crew access, the API exposes only the member’s own run and activity view; restricted views return 403.
+- Each member completes only their own mental check-in (mood and perceived stress). Commander and physician may review it, not complete it for someone else.
+- Prepared scenario episodes (SpO₂, disconnection, invalid signal) affect Kenji Mori; the rest of the crew stays within reference variation.
 
-## Estado de sensores
+## Sensor status
 
-Cada tripulante usa nueve dispositivos (`shared/devices.js`): los ocho de SIMISA_entrega (ECG · Parche torácico, Oxímetro de pulso, Banda respiratoria, Sensor térmico dérmico, Tensiómetro biométrico, Biosensor metabólico, Actígrafo de sueño y Densitómetro óseo portátil) más un **Dosímetro personal**. La página muestra un resumen (conectados, con advertencias, sin señal), un recuadro de **posibles problemas** y el inventario con estado, último dato válido, calidad de señal y batería.
+Each member uses nine devices (`shared/devices.js`): the eight from SIMISA_entrega (ECG chest patch, pulse oximeter, respiratory belt, skin temperature sensor, biometric blood pressure monitor, metabolic biosensor, sleep actigraph and portable bone densitometer) plus a **personal dosimeter**. The page shows a summary (connected, warnings, no signal), **potential issues** and an inventory with status, last valid reading, signal quality and battery.
 
-- Estado y calidad se calculan con las lecturas guardadas: desconexión, datos inválidos, señal débil o desactualizada. La calidad es el porcentaje de lecturas válidas entre las últimas 12.
-- La batería es una **estimación simulada** (descarga lineal y recarga diaria), no telemetría del archivo. Por debajo de 20 % se informa como problema; en el escenario, el oxímetro de Kenji llega con poca batería al episodio.
-- El Centro de tripulación también avisa de las baterías bajas.
+- Status and quality come from saved readings: disconnected, invalid, weak or outdated data. Quality is the percentage of valid readings among the last 12.
+- Battery is a **simulated estimate** (linear discharge and daily charging), not telemetry in the file. Below 20% it is flagged as an issue; Kenji’s oximeter reaches the scenario episode with a low battery.
+- Crew health center also flags low batteries.
 
-El dosímetro incorpora `rad`, **Tasa de dosis de radiación**, en **µSv/h**, una vez por minuto (cada 30 minutos en el historial previo). Se consulta en Panel general, Salud corporal → Abdomen (categoría de navegación, sin atribuir exposición a un órgano), Gráficas e historial, Información médica, Asistente e Investigación, con exportación e informes. El motor independiente también la guarda. Las gráficas largas aplican la misma agrupación por media y rango que al resto de las series continuas, sin modificar las lecturas archivadas.
+The dosimeter adds `rad`, **Radiation dose rate**, in **µSv/h**, once per minute (every 30 minutes in prior history). It is available in Health overview, Body health → Abdomen (a navigation category, without attributing exposure to an organ), Charts and history, Medical information, Assistant and Research, with exports and reports. The standalone engine also saves it. Long charts use the same mean-and-range grouping as other continuous series without altering archived readings.
 
-Desde `synthetic-2.3.0` / `entrega-1.3.0`, las nuevas ejecuciones usan el perfil **ISS/LEO**: **0,4–1,1 mSv/día** como escala de exposición, equivalente a tasas medias de **16,67–45,83 µSv/h**. El rango procede del [informe NASA de 2002, sección 2.3](https://ntrs.nasa.gov/api/citations/20020073167/downloads/20020073167.pdf), referido a dosis equivalente a órganos hematopoyéticos y variaciones de blindaje/ciclo solar. [NASA, 2023](https://www.nasa.gov/wp-content/uploads/2023/10/lsah-newsletter-2023-vol28-issue2.pdf) cita un orden de 0,5 mSv/día en ISS. Esta escala no equivale a calibrar un dosímetro ni a predecir dosis efectiva individual o exposición lunar.
+Since `synthetic-2.3.0` / `entrega-1.3.0`, new runs use the **ISS/LEO** exposure scale: **0.4–1.1 mSv/day**, equivalent to mean rates of **16.67–45.83 µSv/h**. This comes from [NASA’s 2002 report, section 2.3](https://ntrs.nasa.gov/api/citations/20020073167/downloads/20020073167.pdf), referring to equivalent dose to blood-forming organs and shielding/solar-cycle variation. [NASA, 2023](https://www.nasa.gov/wp-content/uploads/2023/10/lsah-newsletter-2023-vol28-issue2.pdf) cites about 0.5 mSv/day on the ISS. This scale does not calibrate a dosimeter or predict individual effective dose or lunar exposure.
 
-El generador usa un punto medio de 31,25 µSv/h y variaciones acotadas de 7 días y 90 minutos, compartidas por la tripulación, con pequeñas diferencias por persona y ruido reproducible. Las ondas, frecuencias y pesos son **sintéticos**, independientes del esfuerzo o episodio respiratorio. El perfil, su alcance y sus fuentes quedan guardados en `radiationModel` dentro de cada resultado. El rango de exposición no se usa como banda de seguridad.
+The generator uses a midpoint of 31.25 µSv/h and bounded 7-day and 90-minute variations shared by the crew, with small individual differences and reproducible noise. Waves, frequencies and weights are **synthetic**, independent of exertion or respiratory episodes. The profile, scope and sources are saved in each result’s `radiationModel`. The exposure range is not used as a safety band.
 
-La [OMS](https://www.who.int/news-room/fact-sheets/detail/ionizing-radiation-and-health-effects) cita evidencia de aumento del riesgo de cáncer por encima de **100 mSv de dosis**; no establece un umbral anual universal ni ausencia de riesgo por debajo. SIMISA no calcula riesgo individual ni dispara alertas médicas a partir de esa cifra. La métrica sigue siendo una **tasa**, no dosis acumulada ni daño por órgano; una lectura válida aparece como «Lectura disponible». El contexto y las fuentes se consultan en Información médica. Los archivos anteriores conservan sus valores y dispositivos: no se reescriben ni reciben lecturas inventadas.
+[WHO](https://www.who.int/news-room/fact-sheets/detail/ionizing-radiation-and-health-effects) cites evidence of increased cancer risk above **100 mSv of dose**; it sets no universal annual threshold and does not claim no risk below it. SIMISA does not calculate individual risk or trigger medical alerts from that figure. The metric remains a **rate**, not cumulative dose or organ damage; a valid reading is labeled “Reading available”. Context and sources are in Medical information. Older files retain their values and devices; they are neither rewritten nor given invented readings.
 
-## Historial previo
+## Prior history
 
-`historyDays` (0–30; formulario **Historial previo (días)** o `--history` en la CLI) genera días anteriores al inicio de la ejecución, con tiempos negativos:
+`historyDays` (0–30, **Prior history (days)** in the form or `--history` in the CLI) generates days before the run starts, using negative times:
 
-- Signos vitales cada 30 minutos con ritmo día/noche, sueño diario y densitometría ósea según su período (28 días).
-- Un chequeo psicológico sintético por día y tripulante, guardado en el archivo (`checkins`) y marcado como **Historial sintético**; no se confunde con los chequeos registrados.
-- En Kenji Mori, el descanso empeora y el estrés percibido aumenta en los últimos días, como antesala del episodio.
-- Las gráficas permiten elegir el período (Todo, 14 días, 3 días, 24 h, 1 h) y marcan el inicio de la ejecución. **Inicio del historial** en Configuración → Simulación lleva al primer día.
+- Vital signs every 30 minutes with day/night variation, daily sleep and bone densitometry at its own interval (28 days).
+- One synthetic mental check-in per day and member, saved in `checkins` and labeled **Synthetic history**, distinct from recorded check-ins.
+- Kenji’s rest worsens and perceived stress rises over the final days before the episode.
+- Chart windows: All, 14 days, 3 days, 24 h and 1 h, with a simulation start marker. **History start** in Settings → Simulation moves to the first day.
 
-Los ejemplos incluidos tienen 14 días de historial (unos 10 MB por archivo).
+Included examples have 14 days of history (about 10 MB per file).
 
-## Primer recorrido completo
+## Standalone simulator
 
-1. Ingresar como Ana Torres (comandante) o Lucía Ferreyra (médica) y abrir **Configuración → Simulación**. Elegir nombre, escenario, semilla, duración, paso e inicio UTC.
-2. Pulsar **Ejecutar y guardar**. La aplicación calcula, escribe el archivo, verifica su integridad y vuelve a leerlo antes de mostrarlo.
-3. Explorar **Salud corporal**. Seleccionar corazón, pulmones u otra región; usar el control temporal, zoom, arrastre o teclado.
-4. Cerrar la aplicación local y el navegador. Volver a iniciar `Iniciar SIMISA.cmd`.
-5. Elegir la ejecución guardada y explorarla otra vez. La recuperación no ejecuta el motor ni genera curvas nuevas.
-
-Toda la web usa un único **reloj de misión**, visible en la barra superior con un botón de reproducir/pausar: cada vista muestra el estado a esa hora. Al abrir una ejecución, el reloj queda en pausa dos minutos antes de su primer evento (el episodio de Kenji Mori en el escenario de recorrido); al reproducir, la demo avanza en todas las pantallas a la vez. La barra de tiempo, la velocidad, **Inicio del historial** e **Ir al primer evento** están solo en **Configuración → Simulación**. El pasado se consulta con el selector de **Período** de las gráficas y con las tablas; **Explorar momento** en Alertas lleva el reloj a ese evento. La reproducción avanza sobre registros ya guardados y se pausa al ocultar la ventana. Elegir un nuevo resultado reinicia solamente su exploración, sin borrar archivos.
-
-## Simulador independiente
-
-No hace falta iniciar el servicio web ni abrir un navegador:
+No web service or browser is needed:
 
 ```powershell
 node cli.js --config examples/recorrido.json
 ```
 
-O configurar una ejecución directamente:
+Or configure a run directly:
 
 ```powershell
-node cli.js --name "Prueba respiratoria" --scenario respiratorio --seed 42 --duration 60 --step 10
+node cli.js --name "Respiratory test" --scenario respiratorio --seed 42 --duration 60 --step 10
 ```
 
-`node cli.js --help` muestra los parámetros. `--out` permite elegir otra carpeta de resultados. La web detecta las ejecuciones que se escriban en su carpeta de datos; pulsar **Actualizar archivos** en **Configuración → Simulación** si estaba abierta.
+`node cli.js --help` lists parameters. `--out` selects another output folder. The website detects runs written to its data folder; use **Refresh files** in **Settings → Simulation** if it is already open. Scenario identifiers remain stable across languages.
 
-La función `simulate(config)` de `engine/simulator.js` también se puede importar desde otro programa Node.js. No contiene código del navegador ni escribe archivos; `storage/files.js` resuelve el guardado.
+`simulate(config)` from `engine/simulator.js` can also be imported into another Node.js program. It contains no browser code and writes no files; `storage/files.js` handles persistence.
 
-## Archivos y reproducibilidad
+## Files and reproducibility
 
-- Ubicación predeterminada: `data/runs/<id>.json`, dentro de este proyecto. La variable `SIMISA_DATA_DIR` cambia la carpeta leída por el servicio.
-- Cada archivo contiene configuración, identidad ficticia, versiones de esquema/motor/catálogo, definiciones de indicadores, fuentes, observaciones individuales, eventos, supuestos y huella SHA-256.
-- El guardado escribe y sincroniza un archivo temporal, lo publica sin sobrescribir archivos existentes y verifica su lectura. Un error de escritura o verificación impide confirmar éxito.
-- La misma configuración y versiones producen el mismo contenido e identificador. Una ejecución idéntica recupera el archivo ya existente. El nombre también integra la identidad de la ejecución.
-- Cada observación tiene ruido determinado por semilla, indicador y tiempo simulado. Consultar otras pantallas o ejecutar otro escenario no consume ni modifica su secuencia.
-- Las observaciones son inmutables. Las ausencias se guardan como `null`; baja calidad e invalidez quedan identificadas y excluidas de los valores actuales y los resúmenes.
-- El listado lee el directorio real; no depende de un índice en memoria. Un archivo dañado aparece como advertencia y no se modifica. Las versiones desconocidas se rechazan; una futura versión deberá ofrecer migración explícita.
-- El navegador guarda solamente la selección de archivo y la preferencia de movimiento, no las mediciones. La preferencia no es necesaria para recuperar resultados.
+- Default location: `data/runs/<id>.json` in this project. `SIMISA_DATA_DIR` changes the service’s data folder.
+- Each file contains configuration, fictional identity, schema/engine/catalog versions, indicator definitions, sources, individual observations, events, assumptions and a SHA-256 checksum.
+- Saving writes and synchronizes a temporary file, publishes it without replacing existing files and verifies it by reading it back. A write or verification error prevents a success response.
+- Identical settings and versions produce identical content and identifiers. An identical run retrieves the existing file. The run name also contributes to its identity.
+- Each observation’s noise is determined by seed, indicator and simulated time. Viewing another screen or running another scenario does not consume or change its sequence.
+- Observations are immutable. Missing readings are `null`; low-quality and invalid values are identified and excluded from current values and summaries.
+- The list reads the actual directory, not an in-memory index. Damaged files appear as warnings and remain untouched. Unknown versions are rejected; future versions must provide explicit migration.
+- The browser stores only the selected file and motion/language preferences, not measurements. Preferences are not required to recover results.
 
-Un cierre abrupto antes de publicar puede dejar un temporal ignorado por el listado. No se garantiza conservación frente a fallas físicas del dispositivo de almacenamiento. Conservar copias de los JSON si se necesitan respaldos externos.
+An abrupt shutdown before publication may leave a temporary file ignored by the listing. Preservation against physical storage failure is not guaranteed. Keep copies of the JSON files for external backups.
 
-## Definiciones y límites
-
-SIMISA_entrega decide claves, nombres, unidades y bandas de referencia. Se conservan `hr`, `sys`, `dia`, `rr`, `spo2`, `temp`, `gluc`, `bmd`, `sleep` y `stress`. La densidad ósea permanece en g/cm²; estrés usa escala 0–10; la presión conserva dos indicadores adquiridos juntos. [Decisiones y trazabilidad](docs/decisiones.md).
-
-Los signos vitales y el sueño provienen exclusivamente de sensores médicos simulados; la aplicación no permite ingresar ni sobreescribir esas mediciones a mano. El único registro manual habilitado es el **chequeo psicológico** en **Bienestar psicológico**, donde el astronauta registra su estado de ánimo y estrés percibido (0–10) como autoinforme.
-
-Son datos sintéticos para probar software. Las referencias numéricas, relaciones, períodos y eventos son demostrativos, sin validación fisiológica o clínica. Las imágenes son ilustraciones 2D generadas con IA, con detalles independientes y zoom limitado a su resolución. No permiten rotación 3D ni diagnóstico. Se conserva la [procedencia anatómica](web/assets/PROCEDENCIA.md) y sus prompts.
-
-La navegación conserva las 13 opciones originales de SIMISA_entrega. Sueño consulta las lecturas del sensor de descanso; Bienestar psicológico permite completar y consultar el chequeo psicológico junto al descanso; el asistente ofrece respuestas locales guiadas sobre las lecturas y chequeos seleccionados; Investigación calcula y exporta estadísticas. Comunicación Tierra permite preparar, entregar en bandeja local y descargar informes; Perfiles muestra la tripulación, los permisos de cada rol y permite cambiar de tripulante; el Centro de tripulación (solo comandante y médica) resume el estado de cada integrante. No se inventan fases de sueño, conexiones externas ni autenticación de servidor.
-
-Los parámetros, la selección de resultados, los controles de reproducción, la procedencia y los límites de los datos se concentran en **Configuración → Simulación**. Las demás vistas presentan las lecturas sin carteles de demo, identificadores de archivo ni aclaraciones repetidas. La clasificación y procedencia sintética siguen conservadas en los archivos y exportaciones.
-
-No hay sensores reales, autenticación, permisos médicos ni sincronización con Tierra. No se deben introducir datos personales reales.
-
-## Verificación
+## Verification
 
 ```powershell
 node --test
 node scripts/verify-originals.js
 ```
 
-Las pruebas (18, en `test/`, incluidas permisos de tripulación e historial previo) comprueban reproducción exacta, restricciones y frecuencias, presión pareada, episodios, ausencias, recuperación, calidad, corrupción de archivos, guardado idempotente, API, reinicio real del proceso después de generar una ejecución con la CLI, actividad registrada (chequeo psicológico, revisiones, informes, envío único ante solicitudes simultáneas, tolerancia a archivos dañados), acceso por túnel y consultas del asistente e investigación. El segundo comando coteja los 79 archivos originales con las huellas tomadas antes de crear el proyecto; solo funciona dentro de la carpeta SIMISA original, porque esos archivos están fuera de este repositorio.
+Tests in `test/` cover exact reproduction, constraints and sampling rates, paired pressure, episodes, missing data, recovery, quality, corruption, idempotent saving, API behavior, a real process restart after CLI generation, activity (mental check-ins, reviews, reports, single dispatch under concurrent requests, damaged-file tolerance), crew permissions, prior history, tunnel access, assistant queries and research. The consultation checks also cover English responses, Spanish switching and localized CSV headings.
 
-Durante el desarrollo no se ejecuta la batería completa tras cada cambio: se usa `node --check <archivo>` y solo el archivo de prueba afectado (`test/simulation.test.js`, `test/activity.test.js` o `test/consultation.test.js`). La batería completa se reserva para cerrar una fase o antes de un commit. Detalle en la skill `simisa-modo-rapido` (`../.opencode/skills/simisa-modo-rapido/SKILL.md`).
+The second command compares 79 original files with checksums recorded before creating this project. It works only inside the original SIMISA workspace because those files are outside this repository.
 
-La revisión del navegador y sus límites se registran en [Validación](docs/validacion.md).
+During development, do not run the full suite after every edit: use `node --check <file>` and the affected test file (`test/simulation.test.js`, `test/activity.test.js` or `test/consultation.test.js`) at the end of a work block. Reserve the full suite for a phase boundary or before a commit. See the workspace’s `simisa-modo-rapido` policy (`../.opencode/skills/simisa-modo-rapido/SKILL.md` relative to the project root).
 
-## Organización
+The dated browser review and its limits are recorded in [Validation](docs/en/validation.md); it is a historical record, not evidence of visual review for later translations.
 
-| Carpeta o archivo | Responsabilidad |
+## Organization
+
+| Folder or file | Responsibility |
 | --- | --- |
-| `engine/` | Motor sintético independiente |
-| `shared/` | Catálogo y consultas comunes sobre resultados |
-| `storage/` | Esquema, integridad y persistencia real |
-| `cli.js` | Ejecución sin web |
-| `server.js` | Servicio local y lectura de archivos para la interfaz |
-| `web/` | Interfaz derivada de SIMISA_entrega y assets conservados |
-| `data/runs/` | Ejecuciones persistidas |
-| `data/legacy-*/` | Ejemplos de versiones anteriores del motor, archivados sin cambios |
-| `shared/crew.js` | Tripulación ficticia, roles y reglas de acceso |
-| `Publicar SIMISA.cmd` | Servidor + túnel de Cloudflare para un enlace público |
-| `test/` | Pruebas funcionales |
-| `docs/` | Decisiones, evidencia y manifiesto de originales |
+| `engine/` | Independent synthetic engine |
+| `shared/` | Catalog and common result queries |
+| `storage/` | Schema, integrity and file persistence |
+| `cli.js` | Runs without the website |
+| `server.js` | Local service and interface file access |
+| `web/` | Interface derived from SIMISA_entrega and preserved assets |
+| `web/js/i18n.js`, `web/js/locales/` | Language preference, presentation helpers and English messages |
+| `data/runs/` | Persisted runs |
+| `data/legacy-*/` | Earlier engine examples, archived unchanged |
+| `shared/crew.js` | Fictional crew, roles and access rules |
+| `Publicar SIMISA.cmd` | Server and Cloudflare tunnel for a public link |
+| `test/` | Functional tests |
+| `docs/en/`, `docs/es/` | Documentation by language |
+| `docs/fuentes-originales.json` | Original-file checksum manifest |

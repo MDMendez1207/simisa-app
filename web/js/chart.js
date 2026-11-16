@@ -1,3 +1,4 @@
+import {t, html, getLocale} from './i18n.js';
 // Evolución del dibujo SVG de SIMISA_entrega/features/graficas.js.
 // Área y línea con tiempos reales de registros, huecos explícitos y ventana temporal.
 // En períodos largos se agrupan las lecturas: línea de media y banda mínimo–máximo.
@@ -32,7 +33,7 @@ function buckets(rows, start, size) {
 export function chart(rows, metric, elapsedSec, {fromSec = 0, startTime, width = 900} = {}) {
   const visible = rows.filter(r => r.elapsedSec <= elapsedSec && r.elapsedSec >= fromSec);
   const good = visible.filter(r => r.quality === 'valid' && Number.isFinite(r.value));
-  if (!good.length) return '<p class="empty">No hay lecturas válidas en este período.</p>';
+  if (!good.length) return html('<p class="empty">No hay lecturas válidas en este período.</p>');
   // `width` en unidades del SVG: menor en tarjetas angostas para que los textos conserven su tamaño.
   const w = width, h = width < 700 ? 250 : 270, left = 54, right = 16, top = 18, bottom = 34;
   const start = Math.min(fromSec, elapsedSec - 1), span = Math.max(1, elapsedSec - start);
@@ -74,16 +75,16 @@ export function chart(rows, metric, elapsedSec, {fromSec = 0, startTime, width =
     return `<text x="${x(sec).toFixed(1)}" y="${h - 8}" text-anchor="${f === 0 ? 'start' : f === 1 ? 'end' : 'middle'}">${text}</text>`;
   }).join('');
   const now = start < 0 && elapsedSec > 0 && x(0) < w - right - 150
-    ? `<line x1="${x(0)}" x2="${x(0)}" y1="${top}" y2="${base}" class="chart-now"/><text x="${x(0) + 6}" y="${top + 12}" class="chart-now-label">Inicio de la ejecución</text>` : '';
+    ? html`<line x1="${x(0)}" x2="${x(0)}" y1="${top}" y2="${base}" class="chart-now"/><text x="${x(0) + 6}" y="${top + 12}" class="chart-now-label">Inicio de la ejecución</text>` : '';
   const last = good.at(-1);
-  const marker = `<circle cx="${x(last.elapsedSec).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="4.5" fill="${metric.color}" class="chart-last"><title>${escapar(last.timestamp)} · ${last.value} ${escapar(metric.unidad)}</title></circle>`;
-  const dots = !grouped && good.length <= 24 ? good.map(r => `<circle cx="${x(r.elapsedSec).toFixed(1)}" cy="${y(r.value).toFixed(1)}" r="3" fill="${metric.color}"><title>${escapar(r.timestamp)} · ${r.value} ${escapar(metric.unidad)}</title></circle>`).join('') : '';
-  const averages = grouped ? segments.flatMap(seg => seg.map(p => `<circle cx="${x(p.t).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="4" fill="transparent"><title>${escapar(p.first)} — ${escapar(p.last)} · Media: ${p.value.toFixed(metric.decimals)} ${escapar(metric.unidad)} · ${p.n} lecturas · Mín.: ${p.min} · Máx.: ${p.max}</title></circle>`)).join('') : '';
+  const marker = `<circle cx="${x(last.elapsedSec).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="4.5" fill="${metric.color}" class="chart-last"><title>${escapar(last.timestamp)} · ${last.value} ${escapar(t(metric.unidad))}</title></circle>`;
+  const dots = !grouped && good.length <= 24 ? good.map(r => `<circle cx="${x(r.elapsedSec).toFixed(1)}" cy="${y(r.value).toFixed(1)}" r="3" fill="${metric.color}"><title>${escapar(r.timestamp)} · ${r.value} ${escapar(t(metric.unidad))}</title></circle>`).join('') : '';
+  const averages = grouped ? segments.flatMap(seg => seg.map(p => html`<circle cx="${x(p.t).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="4" fill="transparent"><title>${escapar(p.first)} — ${escapar(p.last)} · Media: ${p.value.toFixed(metric.decimals)} ${escapar(t(metric.unidad))} · ${p.n} lecturas · Mín.: ${p.min} · Máx.: ${p.max}</title></circle>`)).join('') : '';
   const interval = formatDuration(bucketSec);
-  return `<svg class="history-chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${escapar(metric.nombre)} en ${escapar(metric.unidad)}${grouped ? ', media por intervalo con rango mínimo y máximo' : ''}. Las interrupciones representan datos ausentes o excluidos.">
+  return html`<svg class="history-chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${escapar(t(metric.nombre))} en ${escapar(t(metric.unidad))}${grouped ? t(', media por intervalo con rango mínimo y máximo') : ''}. Las interrupciones representan datos ausentes o excluidos.">
     <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${metric.color}" stop-opacity=".28"/><stop offset="1" stop-color="${metric.color}" stop-opacity="0"/></linearGradient></defs>
     ${reference}${ticks}${now}${labels}
     ${grouped ? segments.map(s => `<path d="${band(s)}" fill="${metric.color}" opacity=".18"/>`).join('') : segments.map(s => `<path d="${area(s)}" fill="url(#${id})"/>`).join('')}
     ${segments.map(s => `<path d="${line(s)}" fill="none" stroke="${metric.color}" stroke-width="${grouped ? 2 : 1.8}" stroke-linejoin="round" stroke-linecap="round"/>`).join('')}
-    ${dots}${averages}${marker}</svg>${grouped ? `<p class="hint chart-legend">Media cada ${interval} · ${good.length.toLocaleString('es-AR')} lecturas → ${segments.reduce((n,s)=>n+s.length,0)} puntos. Franja: mínimo y máximo${reference ? ' · zona clara: referencia' : ''}.</p>` : ''}`;
+    ${dots}${averages}${marker}</svg>${grouped ? html`<p class="hint chart-legend">Media cada ${interval} · ${good.length.toLocaleString(getLocale())} lecturas → ${segments.reduce((n,s)=>n+s.length,0)} puntos. Franja: mínimo y máximo${reference ? t(' · zona clara: referencia') : ''}.</p>` : ''}`;
 }
